@@ -33,11 +33,11 @@ Partial Class abm_tipos_doc
         Me.Label1.Font = New System.Drawing.Font("Microsoft Sans Serif", 50.0!, CType(((System.Drawing.FontStyle.Bold Or System.Drawing.FontStyle.Italic) _
                 Or System.Drawing.FontStyle.Underline), System.Drawing.FontStyle), System.Drawing.GraphicsUnit.Point, CType(3, Byte))
         Me.Label1.ForeColor = System.Drawing.SystemColors.ControlLightLight
-        Me.Label1.Location = New System.Drawing.Point(24, 87)
+        Me.Label1.Location = New System.Drawing.Point(2, 87)
         Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(239, 76)
+        Me.Label1.Size = New System.Drawing.Size(285, 76)
         Me.Label1.TabIndex = 0
-        Me.Label1.Text = "HOLIS"
+        Me.Label1.Text = "HOLISS"
         '
         'abm_tipos_doc
         '
