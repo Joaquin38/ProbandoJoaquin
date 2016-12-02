@@ -23,20 +23,23 @@ Partial Class abm_compus
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(abm_compus))
-        Me.Button1 = New System.Windows.Forms.Button()
+        Me.CheckBox1 = New System.Windows.Forms.CheckBox()
         Me.SuspendLayout()
         '
-        'Button1
+        'CheckBox1
         '
-        Me.Button1.BackColor = System.Drawing.Color.Transparent
-        Me.Button1.FlatAppearance.BorderSize = 0
-        Me.Button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat
-        Me.Button1.Location = New System.Drawing.Point(71, 39)
-        Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(295, 259)
-        Me.Button1.TabIndex = 0
-        Me.Button1.Text = "asd"
-        Me.Button1.UseVisualStyleBackColor = False
+        Me.CheckBox1.AutoSize = True
+        Me.CheckBox1.BackColor = System.Drawing.Color.Transparent
+        Me.CheckBox1.Checked = True
+        Me.CheckBox1.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.CheckBox1.FlatAppearance.BorderSize = 0
+        Me.CheckBox1.FlatStyle = System.Windows.Forms.FlatStyle.Popup
+        Me.CheckBox1.Location = New System.Drawing.Point(153, 131)
+        Me.CheckBox1.Name = "CheckBox1"
+        Me.CheckBox1.Size = New System.Drawing.Size(102, 17)
+        Me.CheckBox1.TabIndex = 0
+        Me.CheckBox1.Text = "La lore se la co?"
+        Me.CheckBox1.UseVisualStyleBackColor = False
         '
         'abm_compus
         '
@@ -45,11 +48,12 @@ Partial Class abm_compus
         Me.BackgroundImage = CType(resources.GetObject("$this.BackgroundImage"), System.Drawing.Image)
         Me.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
         Me.ClientSize = New System.Drawing.Size(411, 361)
-        Me.Controls.Add(Me.Button1)
+        Me.Controls.Add(Me.CheckBox1)
         Me.Name = "abm_compus"
         Me.Text = "abm_compus"
         Me.ResumeLayout(False)
+        Me.PerformLayout()
 
     End Sub
-    Friend WithEvents Button1 As System.Windows.Forms.Button
+    Friend WithEvents CheckBox1 As System.Windows.Forms.CheckBox
 End Class
