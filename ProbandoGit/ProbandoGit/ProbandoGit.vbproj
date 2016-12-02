@@ -82,6 +82,12 @@
     <Compile Include="ABM\abm_tipos_doc.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="ESTADISTICAS\est_centros_no_notif.Designer.vb">
+      <DependentUpon>est_centros_no_notif.vb</DependentUpon>
+    </Compile>
+    <Compile Include="ESTADISTICAS\est_centros_no_notif.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Form1.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -117,6 +123,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ABM\abm_tipos_doc.resx">
       <DependentUpon>abm_tipos_doc.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ESTADISTICAS\est_centros_no_notif.resx">
+      <DependentUpon>est_centros_no_notif.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.vb</DependentUpon>
