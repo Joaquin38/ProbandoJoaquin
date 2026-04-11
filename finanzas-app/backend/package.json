@@ -1,0 +1,10 @@
+{
+  "name": "finanzas-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Backend inicial para app de finanzas personales",
+  "scripts": {
+    "dev": "node src/main.js",
+    "start": "node src/main.js"
+  }
+}
