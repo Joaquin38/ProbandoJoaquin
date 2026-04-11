@@ -49,6 +49,12 @@ Opción recomendada (automática):
 ./scripts/iniciar_entorno.sh
 ```
 
+Si estás en **PowerShell (Windows)** usá:
+
+```powershell
+.\scripts\iniciar_entorno.ps1
+```
+
 Opción manual:
 
 ```bash
@@ -61,10 +67,22 @@ docker compose up -d
 ./scripts/estado_entorno.sh
 ```
 
+PowerShell:
+
+```powershell
+.\scripts\estado_entorno.ps1
+```
+
 ### 4) Reiniciar base desde cero (si querés empezar limpio)
 
 ```bash
 ./scripts/reset_bd.sh
+```
+
+PowerShell:
+
+```powershell
+.\scripts\reset_bd.ps1
 ```
 
 ---
@@ -114,3 +132,25 @@ curl http://localhost:3000/salud
 2. Traducir esquema SQL a Prisma schema.
 3. Implementar autenticación + hogares compartidos.
 4. Exponer endpoints de movimientos, categorías, etiquetas y cotizaciones.
+
+## Resolver conflictos al abrir PR
+
+Si GitHub te marca conflictos en `.env.example`, `README.md` o docs, hacé esto en tu rama:
+
+```bash
+git fetch origin
+git checkout <tu-rama>
+git merge origin/main
+```
+
+Después resolvé conflictos en los archivos marcados, guardá, y ejecutá:
+
+```bash
+git add finanzas-app/.env.example finanzas-app/README.md finanzas-app/docs/conexion_dbeaver.md
+git commit -m "Resuelve conflictos con main"
+git push
+```
+
+Cuando subas ese push, el PR debería quedar sin conflictos.
+
+Guía extendida: `docs/resolver_conflictos_pr.md`.
