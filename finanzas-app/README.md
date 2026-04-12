@@ -103,10 +103,11 @@ Guía completa: `docs/conexion_dbeaver.md`.
 
 ## Backend inicial
 
-Se agregó un backend mínimo en `backend/` para verificar que podés ejecutar servicios localmente.
+Se agregó un backend inicial en `backend/` con conexión a PostgreSQL y endpoints de movimientos.
 
 ```bash
 cd backend
+cp .env.example .env
 npm install
 npm run dev
 ```
@@ -115,6 +116,39 @@ Probar endpoint de salud:
 
 ```bash
 curl http://localhost:3000/salud
+```
+
+Listar movimientos demo:
+
+```bash
+curl "http://localhost:3000/movimientos?hogar_id=1"
+```
+
+Crear un movimiento demo:
+
+```bash
+curl -X POST http://localhost:3000/movimientos \
+  -H "Content-Type: application/json" \
+  -d '{
+    "hogar_id": 1,
+    "cuenta_id": 1,
+    "tipo_movimiento_id": 2,
+    "categoria_id": 2,
+    "fecha": "2026-04-12",
+    "descripcion": "Compra supermercado",
+    "moneda_original": "ARS",
+    "monto_original": 55000,
+    "monto_ars": 55000,
+    "creado_por_usuario_id": 1
+  }'
+```
+
+## Datos demo opcionales
+
+Para cargar un hogar/usuario/categorías demo y probar la API rápido:
+
+```bash
+docker compose exec -T postgres psql -U finanzas -d finanzas_db < bd/02_datos_demo.sql
 ```
 
 ---

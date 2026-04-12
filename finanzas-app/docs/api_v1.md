@@ -22,6 +22,13 @@
 - `PATCH /movimientos/:id`
 - `DELETE /movimientos/:id`
 
+### Estado actual de implementación
+
+- ✅ `GET /movimientos?hogar_id=1[&desde=YYYY-MM-DD&hasta=YYYY-MM-DD]`
+- ✅ `POST /movimientos`
+- ⏳ `PATCH /movimientos/:id`
+- ⏳ `DELETE /movimientos/:id`
+
 ## Gastos fijos
 
 - `GET /gastos-fijos`
