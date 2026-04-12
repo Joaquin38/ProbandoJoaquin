@@ -163,6 +163,7 @@ Se agregó un frontend base en `frontend/` con:
 - tabla de movimientos,
 - menú lateral colapsable fijo a la izquierda,
 - panel de cotización del dólar,
+- sección de gastos fijos (alta + listado),
 - confirmación de eliminación en popup propio,
 - conexión a API vía `VITE_API_URL`.
 

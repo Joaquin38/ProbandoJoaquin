@@ -42,6 +42,12 @@
 - `POST /gastos-fijos`
 - `POST /gastos-fijos/:id/ajustes`
 
+### Estado actual de implementación
+
+- ✅ `GET /gastos-fijos?hogar_id=1`
+- ✅ `POST /gastos-fijos`
+- ✅ `POST /gastos-fijos/:id/ajustes`
+
 ## Cotizaciones e IPC
 
 - `GET /cotizaciones?fecha=YYYY-MM-DD`

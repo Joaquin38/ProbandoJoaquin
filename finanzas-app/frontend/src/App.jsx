@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  createGastoFijo,
   createMovimiento,
   deleteMovimiento,
   getCategorias,
   getCotizaciones,
+  getGastosFijos,
   getMovimientos,
   getResumen,
   updateMovimiento
@@ -13,11 +15,13 @@ import MovimientosTable from './components/MovimientosTable.jsx';
 import NuevoMovimientoForm from './components/NuevoMovimientoForm.jsx';
 import MenuLateral from './components/MenuLateral.jsx';
 import CotizacionesPanel from './components/CotizacionesPanel.jsx';
+import GastosFijosPanel from './components/GastosFijosPanel.jsx';
 
 export default function App() {
   const [movimientos, setMovimientos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [cotizaciones, setCotizaciones] = useState([]);
+  const [gastosFijos, setGastosFijos] = useState([]);
   const [resumen, setResumen] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -26,21 +30,24 @@ export default function App() {
   const [movimientoEditando, setMovimientoEditando] = useState(null);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [seccionActiva, setSeccionActiva] = useState('dashboard');
 
   const cargarDatos = async () => {
     try {
       setError('');
-      const [movData, catData, resumenData, cotiData] = await Promise.all([
+      const [movData, catData, resumenData, cotiData, gastosData] = await Promise.all([
         getMovimientos(1),
         getCategorias(1),
         getResumen(1),
-        getCotizaciones()
+        getCotizaciones(),
+        getGastosFijos(1)
       ]);
 
       setMovimientos(movData.items || []);
       setCategorias(catData.items || []);
       setResumen(resumenData || {});
       setCotizaciones(cotiData.items || []);
+      setGastosFijos(gastosData.items || []);
     } catch (err) {
       setError(err.message);
     }
@@ -76,6 +83,17 @@ export default function App() {
     }
   };
 
+  const handleCrearGastoFijo = async (payload) => {
+    try {
+      setError('');
+      await createGastoFijo(payload);
+      await cargarDatos();
+      setSeccionActiva('gastos_fijos');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const handleEditar = (movimiento) => {
     setModoModal('editar');
     setMovimientoEditando(movimiento);
@@ -105,11 +123,16 @@ export default function App() {
     setOpenModal(true);
   };
 
-  const ultimaActualizacion = useMemo(() => new Date().toLocaleString('es-AR'), [movimientos, resumen, cotizaciones]);
+  const ultimaActualizacion = useMemo(() => new Date().toLocaleString('es-AR'), [movimientos, resumen, cotizaciones, gastosFijos]);
 
   return (
     <main className={`container ${menuCollapsed ? 'menu-colapsado' : ''}`}>
-      <MenuLateral collapsed={menuCollapsed} onToggle={() => setMenuCollapsed((v) => !v)} />
+      <MenuLateral
+        collapsed={menuCollapsed}
+        onToggle={() => setMenuCollapsed((v) => !v)}
+        active={seccionActiva}
+        onSelect={setSeccionActiva}
+      />
 
       <div className="contenido-principal">
         <header className="hero">
@@ -129,16 +152,41 @@ export default function App() {
         <ResumenCards resumen={resumen} />
 
         <div className="contenido-dashboard">
-          <section className="panel acciones-panel">
-            <h2>Movimientos</h2>
-            <p>Creá o editá movimientos desde un modal para mantener limpio el dashboard.</p>
-            <button type="button" onClick={abrirModalCrear}>
-              + Nuevo movimiento
-            </button>
-          </section>
+          {(seccionActiva === 'dashboard' || seccionActiva === 'movimientos') && (
+            <>
+              <section className="panel acciones-panel">
+                <h2>Movimientos</h2>
+                <p>Creá o editá movimientos desde un modal para mantener limpio el dashboard.</p>
+                <button type="button" onClick={abrirModalCrear}>
+                  + Nuevo movimiento
+                </button>
+              </section>
 
-          <MovimientosTable movimientos={movimientos} onEditar={handleEditar} onEliminar={handleEliminar} />
-          <CotizacionesPanel cotizaciones={cotizaciones} />
+              <MovimientosTable movimientos={movimientos} onEditar={handleEditar} onEliminar={handleEliminar} />
+            </>
+          )}
+
+          {(seccionActiva === 'dashboard' || seccionActiva === 'cotizacion') && (
+            <CotizacionesPanel cotizaciones={cotizaciones} />
+          )}
+
+          {seccionActiva === 'gastos_fijos' && (
+            <GastosFijosPanel gastos={gastosFijos} categorias={categorias} onCrear={handleCrearGastoFijo} />
+          )}
+
+          {seccionActiva === 'ahorros' && (
+            <section className="panel">
+              <h2>🏦 Ahorros</h2>
+              <p>Próximo paso: vista dedicada para evolución de ahorro en ARS/USD.</p>
+            </section>
+          )}
+
+          {seccionActiva === 'reportes' && (
+            <section className="panel">
+              <h2>📊 Reportes</h2>
+              <p>Próximo paso: comparativas por mes, categoría y tendencia.</p>
+            </section>
+          )}
         </div>
       </div>
 

@@ -374,6 +374,86 @@ app.get('/cotizaciones', async (req, res) => {
   }
 });
 
+app.get('/gastos-fijos', async (req, res) => {
+  const hogarId = Number(req.query.hogar_id);
+
+  if (!hogarId) {
+    return res.status(400).json({ error: 'hogar_id es obligatorio' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `
+      SELECT gf.id, gf.descripcion, gf.moneda, gf.monto_base, gf.dia_vencimiento, c.nombre AS categoria
+      FROM gastos_fijos gf
+      JOIN categorias c ON c.id = gf.categoria_id
+      WHERE gf.hogar_id = $1 AND gf.activo = true
+      ORDER BY gf.id DESC
+      `,
+      [hogarId]
+    );
+
+    return res.status(200).json({ total: rows.length, items: rows });
+  } catch (error) {
+    return res.status(500).json({ error: 'Error consultando gastos fijos', detalle: error.message });
+  }
+});
+
+app.post('/gastos-fijos', async (req, res) => {
+  const { hogar_id, categoria_id, descripcion, moneda, monto_base, dia_vencimiento } = req.body;
+
+  if (!hogar_id || !categoria_id || !descripcion || !moneda || !monto_base) {
+    return res.status(400).json({ error: 'hogar_id, categoria_id, descripcion, moneda y monto_base son obligatorios' });
+  }
+
+  if (!['ARS', 'USD'].includes(moneda)) {
+    return res.status(400).json({ error: 'moneda debe ser ARS o USD' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `
+      INSERT INTO gastos_fijos (hogar_id, categoria_id, descripcion, moneda, monto_base, dia_vencimiento)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING id, hogar_id, categoria_id, descripcion, moneda, monto_base, dia_vencimiento
+      `,
+      [hogar_id, categoria_id, descripcion, moneda, monto_base, dia_vencimiento || null]
+    );
+
+    return res.status(201).json({ ok: true, gasto_fijo: rows[0] });
+  } catch (error) {
+    return res.status(500).json({ error: 'Error creando gasto fijo', detalle: error.message });
+  }
+});
+
+app.post('/gastos-fijos/:id/ajustes', async (req, res) => {
+  const gastoFijoId = Number(req.params.id);
+  const { fecha_aplicacion, tipo_ajuste, valor, nota } = req.body;
+
+  if (!gastoFijoId || !fecha_aplicacion || !tipo_ajuste || !valor) {
+    return res.status(400).json({ error: 'id, fecha_aplicacion, tipo_ajuste y valor son obligatorios' });
+  }
+
+  if (!['porcentaje', 'monto_fijo'].includes(tipo_ajuste)) {
+    return res.status(400).json({ error: "tipo_ajuste debe ser 'porcentaje' o 'monto_fijo'" });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `
+      INSERT INTO ajustes_gastos_fijos (gasto_fijo_id, fecha_aplicacion, tipo_ajuste, valor, nota)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING id, gasto_fijo_id, fecha_aplicacion, tipo_ajuste, valor, nota
+      `,
+      [gastoFijoId, fecha_aplicacion, tipo_ajuste, valor, nota || null]
+    );
+
+    return res.status(201).json({ ok: true, ajuste: rows[0] });
+  } catch (error) {
+    return res.status(500).json({ error: 'Error creando ajuste de gasto fijo', detalle: error.message });
+  }
+});
+
 const port = Number(process.env.API_PORT || 3000);
 app.listen(port, () => {
   console.log(`finanzas-backend escuchando en http://localhost:${port}`);

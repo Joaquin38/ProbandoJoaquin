@@ -103,3 +103,32 @@ export async function getCotizaciones(fecha) {
     throw new Error(normalizeFetchError(error));
   }
 }
+
+export async function getGastosFijos(hogarId = 1) {
+  try {
+    const response = await fetch(`${API_URL}/gastos-fijos?hogar_id=${hogarId}`);
+    if (!response.ok) throw new Error('No se pudieron obtener gastos fijos');
+    return response.json();
+  } catch (error) {
+    throw new Error(normalizeFetchError(error));
+  }
+}
+
+export async function createGastoFijo(payload) {
+  try {
+    const response = await fetch(`${API_URL}/gastos-fijos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const detail = await response.json().catch(() => ({}));
+      throw new Error(detail.error || 'No se pudo crear el gasto fijo');
+    }
+
+    return response.json();
+  } catch (error) {
+    throw new Error(normalizeFetchError(error));
+  }
+}

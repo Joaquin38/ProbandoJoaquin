@@ -1,13 +1,13 @@
 const items = [
-  { label: 'Dashboard', icon: '🏠' },
-  { label: 'Movimientos', icon: '💸' },
-  { label: 'Gastos fijos', icon: '📌' },
-  { label: 'Cotización dólar', icon: '💵' },
-  { label: 'Ahorros', icon: '🏦' },
-  { label: 'Reportes', icon: '📊' }
+  { key: 'dashboard', label: 'Dashboard', icon: '🏠' },
+  { key: 'movimientos', label: 'Movimientos', icon: '💸' },
+  { key: 'gastos_fijos', label: 'Gastos fijos', icon: '📌' },
+  { key: 'cotizacion', label: 'Cotización dólar', icon: '💵' },
+  { key: 'ahorros', label: 'Ahorros', icon: '🏦' },
+  { key: 'reportes', label: 'Reportes', icon: '📊' }
 ];
 
-export default function MenuLateral({ collapsed, onToggle }) {
+export default function MenuLateral({ collapsed, onToggle, active, onSelect }) {
   return (
     <aside className={`menu-shell ${collapsed ? 'collapsed' : ''}`}>
       <div className="menu-top">
@@ -18,8 +18,14 @@ export default function MenuLateral({ collapsed, onToggle }) {
       </div>
 
       <nav>
-        {items.map((item, index) => (
-          <button key={item.label} className={`menu-item ${index === 0 ? 'activo' : ''}`} type="button" title={item.label}>
+        {items.map((item) => (
+          <button
+            key={item.key}
+            className={`menu-item ${active === item.key ? 'activo' : ''}`}
+            type="button"
+            title={item.label}
+            onClick={() => onSelect(item.key)}
+          >
             {collapsed ? item.icon : `${item.icon} ${item.label}`}
           </button>
         ))}
