@@ -97,6 +97,8 @@ button:disabled { background: #94a3b8; }
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; border-bottom: 1px solid #e2e8f0; padding: 10px 6px; font-size: 14px; }
 tbody tr:hover { background: rgba(226, 232, 240, 0.35); }
+tbody tr.row-proyectado { background: #faf5ff; }
+tbody tr.row-proyectado:hover { background: #f3e8ff; }
 
 .acciones-inline { display: flex; gap: 6px; }
 .btn-inline { padding: 6px 8px; border-radius: 8px; font-size: 12px; }

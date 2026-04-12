@@ -171,7 +171,8 @@ export default function App() {
         };
       });
 
-    return [...ingresosFijosProyectados, ...movimientos].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
+    const movimientosOrdenados = [...movimientos].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
+    return [...ingresosFijosProyectados, ...movimientosOrdenados];
   }, [movimientos, gastosFijos, cotizaciones]);
 
   return (

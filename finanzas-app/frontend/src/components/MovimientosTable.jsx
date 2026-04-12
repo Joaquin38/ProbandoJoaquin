@@ -21,7 +21,7 @@ export default function MovimientosTable({ movimientos, onEditar, onEliminar }) 
           </thead>
           <tbody>
             {movimientos.map((mov) => (
-              <tr key={mov.id}>
+              <tr key={mov.id} className={mov.esProyectado ? 'row-proyectado' : ''}>
                 <td>{mov.fecha}</td>
                 <td>
                   <span className={`badge badge-${mov.tipo_movimiento}`}>{mov.tipo_movimiento}</span>
