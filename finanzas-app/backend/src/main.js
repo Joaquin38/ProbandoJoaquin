@@ -301,6 +301,79 @@ app.post('/etiquetas', async (req, res) => {
   }
 });
 
+app.get('/dashboard/resumen', async (req, res) => {
+  const hogarId = Number(req.query.hogar_id);
+
+  if (!hogarId) {
+    return res.status(400).json({ error: 'hogar_id es obligatorio' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `
+      SELECT
+        COALESCE(SUM(CASE WHEN tm.codigo = 'ingreso' THEN m.monto_ars END), 0) AS ingresos,
+        COALESCE(SUM(CASE WHEN tm.codigo = 'egreso' THEN m.monto_ars END), 0) AS egresos,
+        COALESCE(SUM(CASE WHEN tm.codigo = 'ahorro' THEN m.monto_ars END), 0) AS ahorros,
+        COALESCE(COUNT(m.id), 0) AS cantidad_movimientos
+      FROM movimientos m
+      JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
+      WHERE m.hogar_id = $1
+      `,
+      [hogarId]
+    );
+
+    const resumen = rows[0] || { ingresos: 0, egresos: 0, ahorros: 0, cantidad_movimientos: 0 };
+    const balance = Number(resumen.ingresos) - Number(resumen.egresos);
+
+    return res.status(200).json({
+      ingresos: Number(resumen.ingresos),
+      egresos: Number(resumen.egresos),
+      ahorros: Number(resumen.ahorros),
+      balance,
+      cantidad_movimientos: Number(resumen.cantidad_movimientos)
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'Error consultando resumen', detalle: error.message });
+  }
+});
+
+app.get('/cotizaciones', async (req, res) => {
+  const { fecha } = req.query;
+
+  try {
+    if (fecha) {
+      const { rows } = await pool.query(
+        `
+        SELECT fecha, fuente, compra, venta
+        FROM cotizaciones_dolar
+        WHERE fecha = $1
+        ORDER BY fuente ASC
+        `,
+        [fecha]
+      );
+
+      return res.status(200).json({ total: rows.length, items: rows });
+    }
+
+    const { rows } = await pool.query(
+      `
+      SELECT DISTINCT ON (fuente)
+        fecha,
+        fuente,
+        compra,
+        venta
+      FROM cotizaciones_dolar
+      ORDER BY fuente, fecha DESC
+      `
+    );
+
+    return res.status(200).json({ total: rows.length, items: rows });
+  } catch (error) {
+    return res.status(500).json({ error: 'Error consultando cotizaciones', detalle: error.message });
+  }
+});
+
 const port = Number(process.env.API_PORT || 3000);
 app.listen(port, () => {
   console.log(`finanzas-backend escuchando en http://localhost:${port}`);

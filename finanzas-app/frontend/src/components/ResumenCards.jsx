@@ -1,21 +1,9 @@
 function FormattedAmount({ value }) {
-  return <strong>${value.toLocaleString('es-AR')}</strong>;
+  return <strong>${Number(value || 0).toLocaleString('es-AR')}</strong>;
 }
 
-export default function ResumenCards({ movimientos }) {
-  const ingresos = movimientos
-    .filter((m) => m.tipo_movimiento === 'ingreso')
-    .reduce((acc, item) => acc + Number(item.monto_ars), 0);
-
-  const egresos = movimientos
-    .filter((m) => m.tipo_movimiento === 'egreso')
-    .reduce((acc, item) => acc + Number(item.monto_ars), 0);
-
-  const ahorros = movimientos
-    .filter((m) => m.tipo_movimiento === 'ahorro')
-    .reduce((acc, item) => acc + Number(item.monto_ars), 0);
-
-  const balance = ingresos - egresos;
+export default function ResumenCards({ resumen }) {
+  const { ingresos = 0, egresos = 0, ahorros = 0, balance = 0 } = resumen || {};
 
   return (
     <section className="cards-grid">

@@ -1,21 +1,34 @@
 import { useEffect, useMemo, useState } from 'react';
-import { createMovimiento, getCategorias, getMovimientos } from './services/api.js';
+import { createMovimiento, getCategorias, getCotizaciones, getMovimientos, getResumen } from './services/api.js';
 import ResumenCards from './components/ResumenCards.jsx';
 import MovimientosTable from './components/MovimientosTable.jsx';
 import NuevoMovimientoForm from './components/NuevoMovimientoForm.jsx';
+import MenuLateral from './components/MenuLateral.jsx';
+import CotizacionesPanel from './components/CotizacionesPanel.jsx';
 
 export default function App() {
   const [movimientos, setMovimientos] = useState([]);
   const [categorias, setCategorias] = useState([]);
+  const [cotizaciones, setCotizaciones] = useState([]);
+  const [resumen, setResumen] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [openModal, setOpenModal] = useState(false);
 
   const cargarDatos = async () => {
     try {
       setError('');
-      const [movData, catData] = await Promise.all([getMovimientos(1), getCategorias(1)]);
+      const [movData, catData, resumenData, cotiData] = await Promise.all([
+        getMovimientos(1),
+        getCategorias(1),
+        getResumen(1),
+        getCotizaciones()
+      ]);
+
       setMovimientos(movData.items || []);
       setCategorias(catData.items || []);
+      setResumen(resumenData || {});
+      setCotizaciones(cotiData.items || []);
     } catch (err) {
       setError(err.message);
     }
@@ -31,6 +44,7 @@ export default function App() {
       setError('');
       await createMovimiento(payload);
       await cargarDatos();
+      setOpenModal(false);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -38,7 +52,7 @@ export default function App() {
     }
   };
 
-  const ultimaActualizacion = useMemo(() => new Date().toLocaleString('es-AR'), [movimientos]);
+  const ultimaActualizacion = useMemo(() => new Date().toLocaleString('es-AR'), [movimientos, resumen, cotizaciones]);
 
   return (
     <main className="container">
@@ -56,12 +70,38 @@ export default function App() {
 
       {error && <p className="error">{error}</p>}
 
-      <ResumenCards movimientos={movimientos} />
+      <ResumenCards resumen={resumen} />
 
-      <section className="layout-grid">
-        <NuevoMovimientoForm categorias={categorias} onCrear={handleCrearMovimiento} loading={loading} />
-        <MovimientosTable movimientos={movimientos} />
+      <section className="layout-grid-main">
+        <MenuLateral />
+
+        <div className="contenido-dashboard">
+          <section className="panel acciones-panel">
+            <h2>Movimientos</h2>
+            <p>Creá un nuevo movimiento desde un modal para mantener limpio el dashboard.</p>
+            <button type="button" onClick={() => setOpenModal(true)}>
+              + Nuevo movimiento
+            </button>
+          </section>
+
+          <MovimientosTable movimientos={movimientos} />
+          <CotizacionesPanel cotizaciones={cotizaciones} />
+        </div>
       </section>
+
+      {openModal && (
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Alta de movimiento</h3>
+              <button type="button" className="close-btn" onClick={() => setOpenModal(false)}>
+                ✕
+              </button>
+            </div>
+            <NuevoMovimientoForm categorias={categorias} onCrear={handleCrearMovimiento} loading={loading} />
+          </div>
+        </div>
+      )}
     </main>
   );
 }

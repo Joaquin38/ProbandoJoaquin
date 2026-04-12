@@ -17,6 +17,16 @@ export async function getMovimientos(hogarId = 1) {
   }
 }
 
+export async function getResumen(hogarId = 1) {
+  try {
+    const response = await fetch(`${API_URL}/dashboard/resumen?hogar_id=${hogarId}`);
+    if (!response.ok) throw new Error('No se pudo obtener resumen');
+    return response.json();
+  } catch (error) {
+    throw new Error(normalizeFetchError(error));
+  }
+}
+
 export async function createMovimiento(payload) {
   try {
     const response = await fetch(`${API_URL}/movimientos`, {
@@ -40,6 +50,18 @@ export async function getCategorias(hogarId = 1) {
   try {
     const response = await fetch(`${API_URL}/categorias?hogar_id=${hogarId}`);
     if (!response.ok) throw new Error('No se pudieron obtener categorías');
+    return response.json();
+  } catch (error) {
+    throw new Error(normalizeFetchError(error));
+  }
+}
+
+export async function getCotizaciones(fecha) {
+  const url = fecha ? `${API_URL}/cotizaciones?fecha=${fecha}` : `${API_URL}/cotizaciones`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('No se pudieron obtener cotizaciones');
     return response.json();
   } catch (error) {
     throw new Error(normalizeFetchError(error));

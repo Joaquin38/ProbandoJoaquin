@@ -157,8 +157,10 @@ curl -X POST http://localhost:3000/etiquetas \
 Se agregó un frontend base en `frontend/` con:
 
 - resumen de ingresos/egresos/balance,
-- formulario para crear movimientos,
+- alta de movimientos vía modal popup,
 - tabla de movimientos,
+- menú lateral de navegación,
+- panel de cotización del dólar,
 - conexión a API vía `VITE_API_URL`.
 
 ```bash
@@ -195,6 +197,18 @@ Checklist:
 2. Probar salud backend: `curl http://localhost:3000/salud`.
 3. En `frontend/.env` verificar `VITE_API_URL=http://localhost:3000`.
 4. Reiniciar `npm run dev` de frontend.
+
+### Flujo para levantar el proyecto cada vez (mientras seguimos metiendo cambios)
+
+1. `git pull` en tu rama local.
+2. `docker compose up -d` (o `./scripts/iniciar_entorno.ps1`).
+3. Backend (`finanzas-app/backend`):
+   - `npm install` solo si cambió `package.json`
+   - `npm run dev`
+4. Frontend (`finanzas-app/frontend`):
+   - `npm install` solo si cambió `package.json`
+   - `npm run dev`
+5. Abrir `http://localhost:5173`.
 
 Crear un movimiento demo:
 

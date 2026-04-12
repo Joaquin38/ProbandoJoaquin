@@ -49,7 +49,16 @@
 - `GET /ipc?periodo=YYYY-MM`
 - `POST /ipc/sincronizar`
 
+### Estado actual de implementación
+
+- ✅ `GET /cotizaciones`
+- ✅ `GET /cotizaciones?fecha=YYYY-MM-DD`
+
 ## Dashboard
 
 - `GET /dashboard/mes-actual`
 - `GET /dashboard/ultimo-mes-cerrado`
+
+### Estado actual de implementación
+
+- ✅ `GET /dashboard/resumen?hogar_id=1`
