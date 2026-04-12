@@ -152,6 +152,24 @@ curl -X POST http://localhost:3000/etiquetas \
   -d '{ "hogar_id": 1, "nombre": "tarjeta" }'
 ```
 
+## Frontend inicial (React + Vite)
+
+Se agregó un frontend base en `frontend/` con:
+
+- resumen de ingresos/egresos/balance,
+- formulario para crear movimientos,
+- tabla de movimientos,
+- conexión a API vía `VITE_API_URL`.
+
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Abrí `http://localhost:5173`.
+
 Crear un movimiento demo:
 
 ```bash
