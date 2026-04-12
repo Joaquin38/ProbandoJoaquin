@@ -21,6 +21,11 @@ function parseFecha(value) {
   return Number.isNaN(date.getTime()) ? null : value;
 }
 
+function esNumeroPositivo(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0;
+}
+
 app.get('/salud', async (_req, res) => {
   try {
     await pool.query('SELECT 1');
@@ -111,6 +116,10 @@ app.post('/movimientos', async (req, res) => {
     return res.status(400).json({ error: 'fecha debe tener formato YYYY-MM-DD' });
   }
 
+  if (!esNumeroPositivo(monto_original) || !esNumeroPositivo(monto_ars)) {
+    return res.status(400).json({ error: 'monto_original y monto_ars deben ser mayores a 0' });
+  }
+
   try {
     const query = `
       INSERT INTO movimientos (
@@ -149,6 +158,144 @@ app.post('/movimientos', async (req, res) => {
     return res.status(201).json({ ok: true, movimiento: rows[0] });
   } catch (error) {
     return res.status(500).json({ error: 'Error creando movimiento', detalle: error.message });
+  }
+});
+
+app.patch('/movimientos/:id', async (req, res) => {
+  const movimientoId = Number(req.params.id);
+  const { descripcion, categoria_id, cuenta_id } = req.body;
+
+  if (!movimientoId) {
+    return res.status(400).json({ error: 'id inválido' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `
+      UPDATE movimientos
+      SET descripcion = COALESCE($1, descripcion),
+          categoria_id = COALESCE($2, categoria_id),
+          cuenta_id = COALESCE($3, cuenta_id)
+      WHERE id = $4
+      RETURNING id, fecha, descripcion, categoria_id, cuenta_id
+      `,
+      [descripcion ?? null, categoria_id ?? null, cuenta_id ?? null, movimientoId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Movimiento no encontrado' });
+    }
+
+    return res.status(200).json({ ok: true, movimiento: rows[0] });
+  } catch (error) {
+    return res.status(500).json({ error: 'Error actualizando movimiento', detalle: error.message });
+  }
+});
+
+app.delete('/movimientos/:id', async (req, res) => {
+  const movimientoId = Number(req.params.id);
+
+  if (!movimientoId) {
+    return res.status(400).json({ error: 'id inválido' });
+  }
+
+  try {
+    const { rowCount } = await pool.query('DELETE FROM movimientos WHERE id = $1', [movimientoId]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Movimiento no encontrado' });
+    }
+
+    return res.status(200).json({ ok: true, eliminado_id: movimientoId });
+  } catch (error) {
+    return res.status(500).json({ error: 'Error eliminando movimiento', detalle: error.message });
+  }
+});
+
+app.get('/categorias', async (req, res) => {
+  const hogarId = Number(req.query.hogar_id);
+
+  if (!hogarId) {
+    return res.status(400).json({ error: 'hogar_id es obligatorio' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `
+      SELECT c.id, c.nombre, tm.codigo AS tipo_movimiento
+      FROM categorias c
+      JOIN tipos_movimiento tm ON tm.id = c.tipo_movimiento_id
+      WHERE c.hogar_id = $1 AND c.activo = true
+      ORDER BY c.nombre ASC
+      `,
+      [hogarId]
+    );
+
+    return res.status(200).json({ total: rows.length, items: rows });
+  } catch (error) {
+    return res.status(500).json({ error: 'Error consultando categorías', detalle: error.message });
+  }
+});
+
+app.post('/categorias', async (req, res) => {
+  const { hogar_id, nombre, tipo_movimiento_id } = req.body;
+
+  if (!hogar_id || !nombre || !tipo_movimiento_id) {
+    return res.status(400).json({ error: 'hogar_id, nombre y tipo_movimiento_id son obligatorios' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `
+      INSERT INTO categorias (hogar_id, nombre, tipo_movimiento_id)
+      VALUES ($1, $2, $3)
+      RETURNING id, hogar_id, nombre, tipo_movimiento_id
+      `,
+      [hogar_id, nombre.trim(), tipo_movimiento_id]
+    );
+
+    return res.status(201).json({ ok: true, categoria: rows[0] });
+  } catch (error) {
+    return res.status(500).json({ error: 'Error creando categoría', detalle: error.message });
+  }
+});
+
+app.get('/etiquetas', async (req, res) => {
+  const hogarId = Number(req.query.hogar_id);
+
+  if (!hogarId) {
+    return res.status(400).json({ error: 'hogar_id es obligatorio' });
+  }
+
+  try {
+    const { rows } = await pool.query('SELECT id, nombre FROM etiquetas WHERE hogar_id = $1 ORDER BY nombre ASC', [hogarId]);
+    return res.status(200).json({ total: rows.length, items: rows });
+  } catch (error) {
+    return res.status(500).json({ error: 'Error consultando etiquetas', detalle: error.message });
+  }
+});
+
+app.post('/etiquetas', async (req, res) => {
+  const { hogar_id, nombre } = req.body;
+
+  if (!hogar_id || !nombre) {
+    return res.status(400).json({ error: 'hogar_id y nombre son obligatorios' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `
+      INSERT INTO etiquetas (hogar_id, nombre)
+      VALUES ($1, $2)
+      ON CONFLICT (hogar_id, nombre) DO UPDATE SET nombre = EXCLUDED.nombre
+      RETURNING id, hogar_id, nombre
+      `,
+      [hogar_id, nombre.trim()]
+    );
+
+    return res.status(201).json({ ok: true, etiqueta: rows[0] });
+  } catch (error) {
+    return res.status(500).json({ error: 'Error creando etiqueta', detalle: error.message });
   }
 });
 

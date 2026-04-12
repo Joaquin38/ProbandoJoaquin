@@ -124,6 +124,34 @@ Listar movimientos demo:
 curl "http://localhost:3000/movimientos?hogar_id=1"
 ```
 
+Actualizar un movimiento:
+
+```bash
+curl -X PATCH http://localhost:3000/movimientos/1 \
+  -H "Content-Type: application/json" \
+  -d '{ "descripcion": "Compra supermercado mensual" }'
+```
+
+Eliminar un movimiento:
+
+```bash
+curl -X DELETE http://localhost:3000/movimientos/1
+```
+
+Listar categorías del hogar:
+
+```bash
+curl "http://localhost:3000/categorias?hogar_id=1"
+```
+
+Crear etiqueta:
+
+```bash
+curl -X POST http://localhost:3000/etiquetas \
+  -H "Content-Type: application/json" \
+  -d '{ "hogar_id": 1, "nombre": "tarjeta" }'
+```
+
 Crear un movimiento demo:
 
 ```bash
@@ -188,3 +216,29 @@ git push
 Cuando subas ese push, el PR debería quedar sin conflictos.
 
 Guía extendida: `docs/resolver_conflictos_pr.md`.
+
+## ¿Dónde quedan los cambios y cómo traerlos a tu repo local?
+
+Todos los cambios de código/documentación que hago quedan en el repositorio remoto (rama de trabajo + PR).
+En tu PC local siempre hacé este flujo para traer lo último:
+
+```bash
+cd <tu-repo>/ProbandoJoaquin
+git fetch --all
+git checkout <rama-que-estas-usando>
+git pull
+```
+
+Si querés incorporar lo de una rama remota nueva:
+
+```bash
+git checkout -b mi-rama-local origin/<rama-remota>
+```
+
+Después de trabajar localmente, para subir tus cambios:
+
+```bash
+git add .
+git commit -m "mensaje"
+git push
+```

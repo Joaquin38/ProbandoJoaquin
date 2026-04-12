@@ -15,6 +15,13 @@
 - `GET /etiquetas`
 - `POST /etiquetas`
 
+### Estado actual de implementación
+
+- ✅ `GET /categorias?hogar_id=1`
+- ✅ `POST /categorias`
+- ✅ `GET /etiquetas?hogar_id=1`
+- ✅ `POST /etiquetas`
+
 ## Movimientos
 
 - `GET /movimientos?desde=YYYY-MM-DD&hasta=YYYY-MM-DD`
@@ -26,8 +33,8 @@
 
 - ✅ `GET /movimientos?hogar_id=1[&desde=YYYY-MM-DD&hasta=YYYY-MM-DD]`
 - ✅ `POST /movimientos`
-- ⏳ `PATCH /movimientos/:id`
-- ⏳ `DELETE /movimientos/:id`
+- ✅ `PATCH /movimientos/:id` (actualiza descripción/categoría/cuenta)
+- ✅ `DELETE /movimientos/:id`
 
 ## Gastos fijos
 
