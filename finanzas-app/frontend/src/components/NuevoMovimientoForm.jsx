@@ -34,8 +34,12 @@ export default function NuevoMovimientoForm({ categorias, onCrear, loading }) {
   };
 
   return (
-    <section className="panel">
-      <h2>Nuevo movimiento</h2>
+    <section className="panel panel-form">
+      <div className="panel-header">
+        <h2>Cargar movimiento</h2>
+        <p>Completá los campos para registrar ingresos, egresos o ahorro.</p>
+      </div>
+
       <form className="form-grid" onSubmit={handleSubmit}>
         <label>
           Fecha
@@ -80,7 +84,7 @@ export default function NuevoMovimientoForm({ categorias, onCrear, loading }) {
             type="text"
             value={form.descripcion}
             onChange={(e) => handleChange('descripcion', e.target.value)}
-            placeholder="Ej: Supermercado"
+            placeholder="Ej: Supermercado, sueldo, transferencia"
           />
         </label>
 

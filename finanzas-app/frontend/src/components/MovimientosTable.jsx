@@ -1,34 +1,42 @@
 export default function MovimientosTable({ movimientos }) {
   return (
-    <section className="panel">
-      <h2>Movimientos</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Tipo</th>
-            <th>Categoría</th>
-            <th>Descripción</th>
-            <th>Monto ARS</th>
-          </tr>
-        </thead>
-        <tbody>
-          {movimientos.map((mov) => (
-            <tr key={mov.id}>
-              <td>{mov.fecha}</td>
-              <td>{mov.tipo_movimiento}</td>
-              <td>{mov.categoria || '-'}</td>
-              <td>{mov.descripcion || '-'}</td>
-              <td>${Number(mov.monto_ars).toLocaleString('es-AR')}</td>
-            </tr>
-          ))}
-          {movimientos.length === 0 && (
+    <section className="panel panel-table">
+      <div className="panel-header table-header">
+        <h2>Movimientos recientes</h2>
+        <span className="pill muted">{movimientos.length} registros</span>
+      </div>
+
+      <div className="table-wrapper">
+        <table>
+          <thead>
             <tr>
-              <td colSpan={5}>Todavía no hay movimientos cargados.</td>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Categoría</th>
+              <th>Descripción</th>
+              <th>Monto ARS</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {movimientos.map((mov) => (
+              <tr key={mov.id}>
+                <td>{mov.fecha}</td>
+                <td>
+                  <span className={`badge badge-${mov.tipo_movimiento}`}>{mov.tipo_movimiento}</span>
+                </td>
+                <td>{mov.categoria || '-'}</td>
+                <td>{mov.descripcion || '-'}</td>
+                <td>${Number(mov.monto_ars).toLocaleString('es-AR')}</td>
+              </tr>
+            ))}
+            {movimientos.length === 0 && (
+              <tr>
+                <td colSpan={5}>Todavía no hay movimientos cargados.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }

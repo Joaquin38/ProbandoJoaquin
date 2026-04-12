@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createMovimiento, getCategorias, getMovimientos } from './services/api.js';
 import ResumenCards from './components/ResumenCards.jsx';
 import MovimientosTable from './components/MovimientosTable.jsx';
@@ -38,18 +38,30 @@ export default function App() {
     }
   };
 
+  const ultimaActualizacion = useMemo(() => new Date().toLocaleString('es-AR'), [movimientos]);
+
   return (
     <main className="container">
-      <header>
-        <h1>Finanzas App</h1>
-        <p>Panel inicial para gestionar movimientos y ver balance mensual.</p>
+      <header className="hero">
+        <div>
+          <p className="eyebrow">Finanzas personales</p>
+          <h1>Panel mensual</h1>
+          <p className="subtitle">Controlá ingresos, egresos y ahorro sin depender de Excel.</p>
+        </div>
+        <div className="hero-meta">
+          <span className="pill">Hogar demo #1</span>
+          <span className="last-update">Actualizado: {ultimaActualizacion}</span>
+        </div>
       </header>
 
       {error && <p className="error">{error}</p>}
 
       <ResumenCards movimientos={movimientos} />
-      <NuevoMovimientoForm categorias={categorias} onCrear={handleCrearMovimiento} loading={loading} />
-      <MovimientosTable movimientos={movimientos} />
+
+      <section className="layout-grid">
+        <NuevoMovimientoForm categorias={categorias} onCrear={handleCrearMovimiento} loading={loading} />
+        <MovimientosTable movimientos={movimientos} />
+      </section>
     </main>
   );
 }

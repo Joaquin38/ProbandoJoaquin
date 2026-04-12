@@ -170,6 +170,21 @@ npm run dev
 
 Abrí `http://localhost:5173`.
 
+## ¿Tengo que correr siempre `npm install` y `npm run dev`?
+
+Regla práctica:
+
+- `npm install`: **solo la primera vez** (o cuando cambie `package.json`).
+- `npm run dev`: **sí, cada vez que quieras levantar** backend/frontend en modo desarrollo.
+
+Flujo diario típico:
+
+1. Levantar DB (`docker compose up -d` o script `iniciar_entorno`).
+2. Terminal 1 (`backend/`): `npm run dev`.
+3. Terminal 2 (`frontend/`): `npm run dev`.
+
+Si bajaste cambios nuevos del repo y cambió `package.json`, corré otra vez `npm install`.
+
 Crear un movimiento demo:
 
 ```bash
