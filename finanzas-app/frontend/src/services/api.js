@@ -1,5 +1,19 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+function getRangoCiclo(ciclo) {
+  if (!/^\d{4}-\d{2}$/.test(ciclo || '')) return null;
+
+  const [anioTexto, mesTexto] = ciclo.split('-');
+  const anio = Number(anioTexto);
+  const mes = Number(mesTexto);
+  if (!Number.isInteger(anio) || !Number.isInteger(mes) || mes < 1 || mes > 12) return null;
+
+  const ultimoDia = new Date(anio, mes, 0).getDate();
+  const desde = `${ciclo}-01`;
+  const hasta = `${ciclo}-${String(ultimoDia).padStart(2, '0')}`;
+  return { desde, hasta };
+}
+
 function normalizeFetchError(error) {
   if (error?.name === 'TypeError') {
     return 'No se pudo conectar con la API. Verificá que backend esté levantado en http://localhost:3000 y reiniciá npm run dev.';
@@ -14,9 +28,10 @@ export async function getMovimientos(hogarId = 1, incluirEliminados = false, cic
       incluir_eliminados: String(incluirEliminados)
     });
 
-    if (ciclo && /^\d{4}-\d{2}$/.test(ciclo)) {
-      searchParams.set('desde', `${ciclo}-01`);
-      searchParams.set('hasta', `${ciclo}-31`);
+    const rango = getRangoCiclo(ciclo);
+    if (rango) {
+      searchParams.set('desde', rango.desde);
+      searchParams.set('hasta', rango.hasta);
     }
 
     const response = await fetch(`${API_URL}/movimientos?${searchParams.toString()}`);
