@@ -1,4 +1,11 @@
-const items = ['Dashboard', 'Movimientos', 'Gastos fijos', 'Cotización dólar', 'Ahorros', 'Reportes'];
+const items = [
+  { label: 'Dashboard', icon: '🏠' },
+  { label: 'Movimientos', icon: '💸' },
+  { label: 'Gastos fijos', icon: '📌' },
+  { label: 'Cotización dólar', icon: '💵' },
+  { label: 'Ahorros', icon: '🏦' },
+  { label: 'Reportes', icon: '📊' }
+];
 
 export default function MenuLateral({ collapsed, onToggle }) {
   return (
@@ -12,8 +19,8 @@ export default function MenuLateral({ collapsed, onToggle }) {
 
       <nav>
         {items.map((item, index) => (
-          <button key={item} className={`menu-item ${index === 0 ? 'activo' : ''}`} type="button" title={item}>
-            {collapsed ? item.slice(0, 1) : item}
+          <button key={item.label} className={`menu-item ${index === 0 ? 'activo' : ''}`} type="button" title={item.label}>
+            {collapsed ? item.icon : `${item.icon} ${item.label}`}
           </button>
         ))}
       </nav>

@@ -99,6 +99,7 @@ tbody tr:hover { background: rgba(226, 232, 240, 0.35); }
 
 .acciones-inline { display: flex; gap: 6px; }
 .btn-inline { padding: 6px 8px; border-radius: 8px; font-size: 12px; }
+.acciones-inline .btn-inline { min-width: 34px; text-align: center; }
 .btn-inline.danger { background: #ef4444; }
 
 .pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; background: #dbeafe; color: #1e3a8a; font-size: 12px; font-weight: 600; }
@@ -117,6 +118,8 @@ tbody tr:hover { background: rgba(226, 232, 240, 0.35); }
 .modal-content { width: min(760px, 100%); background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25); }
 .modal-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; }
 .close-btn { background: #e2e8f0; color: #0f172a; width: 34px; height: 34px; border-radius: 8px; }
+.confirm-modal p { color: #475569; }
+.confirm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
 
 @media (max-width: 980px) {
   .container,

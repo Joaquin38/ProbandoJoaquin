@@ -25,6 +25,7 @@ export default function App() {
   const [modoModal, setModoModal] = useState('crear');
   const [movimientoEditando, setMovimientoEditando] = useState(null);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
 
   const cargarDatos = async () => {
     try {
@@ -82,13 +83,17 @@ export default function App() {
   };
 
   const handleEliminar = async (id) => {
-    const confirma = window.confirm('¿Seguro querés eliminar este movimiento?');
-    if (!confirma) return;
+    setDeleteTargetId(id);
+  };
+
+  const confirmarEliminar = async () => {
+    if (!deleteTargetId) return;
 
     try {
       setError('');
-      await deleteMovimiento(id);
+      await deleteMovimiento(deleteTargetId);
       await cargarDatos();
+      setDeleteTargetId(null);
     } catch (err) {
       setError(err.message);
     }
@@ -161,6 +166,23 @@ export default function App() {
               modo={modoModal}
               initialValues={movimientoEditando}
             />
+          </div>
+        </div>
+      )}
+
+      {deleteTargetId && (
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal-content confirm-modal">
+            <h3>🗑️ Confirmar eliminación</h3>
+            <p>¿Seguro querés eliminar este movimiento? Esta acción no se puede deshacer.</p>
+            <div className="confirm-actions">
+              <button type="button" className="btn-inline" onClick={() => setDeleteTargetId(null)}>
+                Cancelar
+              </button>
+              <button type="button" className="btn-inline danger" onClick={confirmarEliminar}>
+                Eliminar
+              </button>
+            </div>
           </div>
         </div>
       )}

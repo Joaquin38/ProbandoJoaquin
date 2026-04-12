@@ -9,7 +9,7 @@ export default function CotizacionesPanel({ cotizaciones }) {
       <div className="cotizaciones-grid">
         {cotizaciones.map((coti) => (
           <article key={`${coti.fuente}-${coti.fecha}`} className="cotizacion-item">
-            <h4>{coti.fuente}</h4>
+            <h4>💱 {coti.fuente}</h4>
             <p>Fecha: {coti.fecha}</p>
             <p>Compra: {coti.compra ? `$${Number(coti.compra).toLocaleString('es-AR')}` : '-'}</p>
             <p>Venta: ${Number(coti.venta || 0).toLocaleString('es-AR')}</p>

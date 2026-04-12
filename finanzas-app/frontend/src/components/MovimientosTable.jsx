@@ -30,11 +30,11 @@ export default function MovimientosTable({ movimientos, onEditar, onEliminar }) 
                 <td>${Number(mov.monto_ars).toLocaleString('es-AR')}</td>
                 <td>
                   <div className="acciones-inline">
-                    <button type="button" className="btn-inline" onClick={() => onEditar(mov)}>
-                      Editar
+                    <button type="button" className="btn-inline" title="Editar" onClick={() => onEditar(mov)}>
+                      ✏️
                     </button>
-                    <button type="button" className="btn-inline danger" onClick={() => onEliminar(mov.id)}>
-                      Eliminar
+                    <button type="button" className="btn-inline danger" title="Eliminar" onClick={() => onEliminar(mov.id)}>
+                      🗑️
                     </button>
                   </div>
                 </td>

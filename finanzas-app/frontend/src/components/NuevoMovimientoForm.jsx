@@ -9,6 +9,16 @@ const initialState = {
   moneda_original: 'ARS'
 };
 
+function normalizeInputDate(value) {
+  if (!value) return initialState.fecha;
+  if (value.includes('T')) return value.slice(0, 10);
+  if (value.includes('/')) {
+    const [day, month, year] = value.split('/');
+    if (day && month && year) return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  return value;
+}
+
 export default function NuevoMovimientoForm({ categorias, onCrear, loading, modo = 'crear', initialValues = null }) {
   const [form, setForm] = useState(initialState);
 
@@ -19,7 +29,7 @@ export default function NuevoMovimientoForm({ categorias, onCrear, loading, modo
     }
 
     setForm({
-      fecha: initialValues.fecha || initialState.fecha,
+      fecha: normalizeInputDate(initialValues.fecha),
       tipo_movimiento_id:
         initialValues.tipo_movimiento === 'ingreso'
           ? 1
