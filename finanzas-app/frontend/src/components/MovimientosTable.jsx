@@ -25,13 +25,14 @@ export default function MovimientosTable({ movimientos, onEditar, onEliminar }) 
                 <td>{mov.fecha}</td>
                 <td>
                   <span className={`badge badge-${mov.tipo_movimiento}`}>{mov.tipo_movimiento}</span>
+                  {mov.esProyectado && <span className="badge badge-fijo">fijo</span>}
                 </td>
                 <td>{mov.categoria || '-'}</td>
                 <td>{mov.descripcion || '-'}</td>
                 <td>${Number(mov.monto_ars).toLocaleString('es-AR')}</td>
                 <td>
                   <span className={`badge ${mov.activo ? 'badge-activo' : 'badge-eliminado'}`}>
-                    {mov.activo ? 'Activo' : 'Eliminado'}
+                    {mov.esProyectado ? 'Proyectado' : mov.activo ? 'Activo' : 'Eliminado'}
                   </span>
                 </td>
                 <td>
@@ -40,7 +41,7 @@ export default function MovimientosTable({ movimientos, onEditar, onEliminar }) 
                       type="button"
                       className="btn-inline"
                       title="Editar"
-                      disabled={!mov.activo}
+                      disabled={!mov.activo || mov.esProyectado}
                       onClick={() => onEditar(mov)}
                     >
                       ✏️
@@ -49,7 +50,7 @@ export default function MovimientosTable({ movimientos, onEditar, onEliminar }) 
                       type="button"
                       className="btn-inline danger"
                       title="Eliminar"
-                      disabled={!mov.activo}
+                      disabled={!mov.activo || mov.esProyectado}
                       onClick={() => onEliminar(mov.id)}
                     >
                       🗑️

@@ -145,6 +145,34 @@ export default function App() {
       }),
     []
   );
+  const movimientosConIngresosFijos = useMemo(() => {
+    const ventaReferencia = Number(cotizaciones.find((item) => Number(item.venta) > 0)?.venta || 0);
+    const hoy = new Date();
+    const anio = hoy.getFullYear();
+    const mes = hoy.getMonth();
+
+    const ingresosFijosProyectados = gastosFijos
+      .filter((item) => item.tipo_movimiento === 'ingreso')
+      .map((item) => {
+        const dia = item.dia_vencimiento ? Math.min(Math.max(Number(item.dia_vencimiento), 1), 28) : 1;
+        const fecha = new Date(anio, mes, dia).toISOString().slice(0, 10);
+        const montoBase = Number(item.monto_base || 0);
+        const montoConvertido = item.moneda === 'USD' && ventaReferencia > 0 ? montoBase * ventaReferencia : montoBase;
+
+        return {
+          id: `ingreso-fijo-${item.id}`,
+          fecha,
+          tipo_movimiento: 'ingreso',
+          categoria: item.categoria,
+          descripcion: `${item.descripcion} (ingreso fijo)`,
+          monto_ars: montoConvertido,
+          activo: true,
+          esProyectado: true
+        };
+      });
+
+    return [...ingresosFijosProyectados, ...movimientos].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
+  }, [movimientos, gastosFijos, cotizaciones]);
 
   return (
     <main className={`container ${menuCollapsed ? 'menu-colapsado' : ''}`}>
@@ -192,7 +220,7 @@ export default function App() {
                 </label>
               </section>
 
-              <MovimientosTable movimientos={movimientos} onEditar={handleEditar} onEliminar={handleEliminar} />
+              <MovimientosTable movimientos={movimientosConIngresosFijos} onEditar={handleEditar} onEliminar={handleEliminar} />
             </>
           )}
 

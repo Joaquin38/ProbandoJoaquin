@@ -430,9 +430,17 @@ app.get('/gastos-fijos', async (req, res) => {
   try {
     const { rows } = await pool.query(
       `
-      SELECT gf.id, gf.descripcion, gf.moneda, gf.monto_base, gf.dia_vencimiento, c.nombre AS categoria
+      SELECT
+        gf.id,
+        gf.descripcion,
+        gf.moneda,
+        gf.monto_base,
+        gf.dia_vencimiento,
+        c.nombre AS categoria,
+        tm.codigo AS tipo_movimiento
       FROM gastos_fijos gf
       JOIN categorias c ON c.id = gf.categoria_id
+      JOIN tipos_movimiento tm ON tm.id = c.tipo_movimiento_id
       WHERE gf.hogar_id = $1 AND gf.activo = true
       ORDER BY gf.id DESC
       `,
