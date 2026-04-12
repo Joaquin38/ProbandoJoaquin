@@ -163,7 +163,7 @@ Se agregó un frontend base en `frontend/` con:
 - tabla de movimientos,
 - menú lateral colapsable fijo a la izquierda,
 - visualización del ciclo actual (ej: abril 2026),
-- panel de cotización del dólar,
+- panel de cotización del dólar con actualización desde API pública,
 - sección de valores fijos (alta + listado),
 - ingresos fijos proyectados visibles dentro de la grilla principal de movimientos,
 - confirmación de eliminación en popup propio,

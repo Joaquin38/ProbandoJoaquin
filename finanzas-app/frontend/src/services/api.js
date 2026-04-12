@@ -104,25 +104,6 @@ export async function getCotizaciones(fecha) {
   }
 }
 
-export async function createCotizacion(payload) {
-  try {
-    const response = await fetch(`${API_URL}/cotizaciones`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      const detail = await response.json().catch(() => ({}));
-      throw new Error(detail.error || 'No se pudo crear cotización');
-    }
-
-    return response.json();
-  } catch (error) {
-    throw new Error(normalizeFetchError(error));
-  }
-}
-
 export async function getGastosFijos(hogarId = 1) {
   try {
     const response = await fetch(`${API_URL}/gastos-fijos?hogar_id=${hogarId}`);

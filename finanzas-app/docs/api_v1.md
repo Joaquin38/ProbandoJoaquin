@@ -60,7 +60,7 @@
 
 - ✅ `GET /cotizaciones`
 - ✅ `GET /cotizaciones?fecha=YYYY-MM-DD`
-- ✅ `POST /cotizaciones` (carga manual)
+- ✅ `GET /cotizaciones` sincroniza automáticamente desde API pública al consultar
 
 ## Dashboard
 

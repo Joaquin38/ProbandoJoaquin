@@ -16,6 +16,7 @@ const pool = new Pool({
   user: process.env.DB_USER || 'finanzas',
   password: process.env.DB_PASSWORD || 'finanzas_dev'
 });
+const COTIZACIONES_API_PUBLICA = 'https://dolarapi.com/v1/dolares';
 
 function parseFecha(value) {
   if (!value) return null;
@@ -32,6 +33,44 @@ function resolveCiclo(ciclo, desde) {
   if (ciclo && /^\d{4}-\d{2}$/.test(ciclo)) return ciclo;
   if (desde) return String(desde).slice(0, 7);
   return new Date().toISOString().slice(0, 7);
+}
+
+async function sincronizarCotizacionesDesdeApiPublica() {
+  const response = await fetch(COTIZACIONES_API_PUBLICA);
+  if (!response.ok) {
+    throw new Error(`API pública respondió ${response.status}`);
+  }
+
+  const payload = await response.json();
+  if (!Array.isArray(payload) || payload.length === 0) {
+    throw new Error('La API pública no devolvió cotizaciones');
+  }
+
+  const cotizaciones = payload
+    .filter((item) => item?.casa && Number(item?.venta) > 0)
+    .map((item) => {
+      const fechaBase = item.fechaActualizacion || item.fecha || new Date().toISOString();
+      const fecha = String(fechaBase).slice(0, 10);
+
+      return {
+        fecha,
+        fuente: String(item.casa).toLowerCase(),
+        compra: item.compra ? Number(item.compra) : null,
+        venta: Number(item.venta)
+      };
+    });
+
+  for (const coti of cotizaciones) {
+    await pool.query(
+      `
+      INSERT INTO cotizaciones_dolar (fecha, fuente, compra, venta)
+      VALUES ($1, $2, $3, $4)
+      ON CONFLICT (fecha, fuente)
+      DO UPDATE SET compra = EXCLUDED.compra, venta = EXCLUDED.venta
+      `,
+      [coti.fecha, coti.fuente, coti.compra, coti.venta]
+    );
+  }
 }
 
 app.get('/salud', async (_req, res) => {
@@ -375,6 +414,12 @@ app.get('/cotizaciones', async (req, res) => {
       );
 
       return res.status(200).json({ total: rows.length, items: rows });
+    }
+
+    try {
+      await sincronizarCotizacionesDesdeApiPublica();
+    } catch (syncError) {
+      console.warn('No se pudo sincronizar cotizaciones desde API pública:', syncError.message);
     }
 
     const { rows } = await pool.query(
