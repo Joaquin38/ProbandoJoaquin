@@ -389,6 +389,31 @@ app.get('/cotizaciones', async (req, res) => {
   }
 });
 
+app.post('/cotizaciones', async (req, res) => {
+  const { fecha, fuente, compra, venta } = req.body;
+
+  if (!fecha || !fuente || !venta) {
+    return res.status(400).json({ error: 'fecha, fuente y venta son obligatorios' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `
+      INSERT INTO cotizaciones_dolar (fecha, fuente, compra, venta)
+      VALUES ($1, $2, $3, $4)
+      ON CONFLICT (fecha, fuente)
+      DO UPDATE SET compra = EXCLUDED.compra, venta = EXCLUDED.venta
+      RETURNING id, fecha, fuente, compra, venta
+      `,
+      [fecha, fuente, compra || null, venta]
+    );
+
+    return res.status(201).json({ ok: true, cotizacion: rows[0] });
+  } catch (error) {
+    return res.status(500).json({ error: 'Error creando cotización', detalle: error.message });
+  }
+});
+
 app.get('/gastos-fijos', async (req, res) => {
   const hogarId = Number(req.query.hogar_id);
 

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   createGastoFijo,
+  createCotizacion,
   createMovimiento,
   deleteMovimiento,
   getCategorias,
@@ -90,6 +91,17 @@ export default function App() {
       await createGastoFijo(payload);
       await cargarDatos();
       setSeccionActiva('gastos_fijos');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleCrearCotizacion = async (payload) => {
+    try {
+      setError('');
+      await createCotizacion(payload);
+      await cargarDatos();
+      setSeccionActiva('cotizacion');
     } catch (err) {
       setError(err.message);
     }
@@ -185,7 +197,7 @@ export default function App() {
           )}
 
           {(seccionActiva === 'dashboard' || seccionActiva === 'cotizacion') && (
-            <CotizacionesPanel cotizaciones={cotizaciones} />
+            <CotizacionesPanel cotizaciones={cotizaciones} onCrear={handleCrearCotizacion} />
           )}
 
           {seccionActiva === 'gastos_fijos' && (

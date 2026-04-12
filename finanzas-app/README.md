@@ -249,6 +249,12 @@ Si ya tenías una base creada de antes, aplicá también la migración de baja l
 docker compose exec -T postgres psql -U finanzas -d finanzas_db < bd/03_movimientos_soft_delete.sql
 ```
 
+En PowerShell usá este formato (porque `<` da error):
+
+```powershell
+Get-Content .\bd\03_movimientos_soft_delete.sql | docker compose exec -T postgres psql -U finanzas -d finanzas_db
+```
+
 ---
 
 ## Qué incluye hoy este repo

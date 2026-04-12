@@ -25,4 +25,10 @@ VALUES
   (3, 1, 'Ahorro', 3)
 ON CONFLICT (id) DO NOTHING;
 
+INSERT INTO cotizaciones_dolar (fecha, fuente, compra, venta)
+VALUES
+  (CURRENT_DATE, 'mep', 1125.00, 1130.00),
+  (CURRENT_DATE, 'astropay', 1110.00, 1140.00)
+ON CONFLICT (fecha, fuente) DO NOTHING;
+
 COMMIT;

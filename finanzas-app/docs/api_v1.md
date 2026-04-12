@@ -60,6 +60,7 @@
 
 - ✅ `GET /cotizaciones`
 - ✅ `GET /cotizaciones?fecha=YYYY-MM-DD`
+- ✅ `POST /cotizaciones` (carga manual)
 
 ## Dashboard
 
