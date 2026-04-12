@@ -7,9 +7,19 @@ function normalizeFetchError(error) {
   return error?.message || 'Ocurrió un error inesperado';
 }
 
-export async function getMovimientos(hogarId = 1, incluirEliminados = false) {
+export async function getMovimientos(hogarId = 1, incluirEliminados = false, ciclo) {
   try {
-    const response = await fetch(`${API_URL}/movimientos?hogar_id=${hogarId}&incluir_eliminados=${incluirEliminados}`);
+    const searchParams = new URLSearchParams({
+      hogar_id: String(hogarId),
+      incluir_eliminados: String(incluirEliminados)
+    });
+
+    if (ciclo && /^\d{4}-\d{2}$/.test(ciclo)) {
+      searchParams.set('desde', `${ciclo}-01`);
+      searchParams.set('hasta', `${ciclo}-31`);
+    }
+
+    const response = await fetch(`${API_URL}/movimientos?${searchParams.toString()}`);
     if (!response.ok) throw new Error('No se pudieron obtener movimientos');
     return response.json();
   } catch (error) {

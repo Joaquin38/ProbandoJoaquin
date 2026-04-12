@@ -32,12 +32,13 @@ export default function App() {
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [seccionActiva, setSeccionActiva] = useState('dashboard');
   const [mostrarEliminados, setMostrarEliminados] = useState(false);
+  const [cicloSeleccionado, setCicloSeleccionado] = useState(new Date().toISOString().slice(0, 7));
 
   const cargarDatos = async () => {
     try {
       setError('');
       const [movData, catData, resumenData, cotiData, gastosData] = await Promise.all([
-        getMovimientos(1, mostrarEliminados),
+        getMovimientos(1, mostrarEliminados, cicloSeleccionado),
         getCategorias(1),
         getResumen(1),
         getCotizaciones(),
@@ -56,7 +57,7 @@ export default function App() {
 
   useEffect(() => {
     cargarDatos();
-  }, [mostrarEliminados]);
+  }, [mostrarEliminados, cicloSeleccionado]);
 
   const handleCrearMovimiento = async (payload) => {
     try {
@@ -127,23 +128,24 @@ export default function App() {
   const ultimaActualizacion = useMemo(() => new Date().toLocaleString('es-AR'), [movimientos, resumen, cotizaciones, gastosFijos]);
   const cicloActual = useMemo(
     () =>
-      new Date().toLocaleDateString('es-AR', {
+      new Date(`${cicloSeleccionado}-01T00:00:00`).toLocaleDateString('es-AR', {
         month: 'long',
         year: 'numeric'
       }),
-    []
+    [cicloSeleccionado]
   );
   const movimientosConValoresFijos = useMemo(() => {
     const ventaReferencia = Number(cotizaciones.find((item) => Number(item.venta) > 0)?.venta || 0);
+    const [anio, mesTexto] = cicloSeleccionado.split('-');
     const hoy = new Date();
-    const anio = hoy.getFullYear();
-    const mes = hoy.getMonth();
+    const anioNumero = Number.isFinite(Number(anio)) ? Number(anio) : hoy.getFullYear();
+    const mesNumero = Number.isFinite(Number(mesTexto)) ? Math.max(Number(mesTexto) - 1, 0) : hoy.getMonth();
 
     const valoresFijosProyectados = gastosFijos
       .filter((item) => ['ingreso', 'egreso'].includes(item.tipo_movimiento))
       .map((item) => {
         const dia = item.dia_vencimiento ? Math.min(Math.max(Number(item.dia_vencimiento), 1), 28) : 1;
-        const fecha = new Date(anio, mes, dia).toISOString().slice(0, 10);
+        const fecha = new Date(anioNumero, mesNumero, dia).toISOString().slice(0, 10);
         const montoBase = Number(item.monto_base || 0);
         const montoConvertido = item.moneda === 'USD' && ventaReferencia > 0 ? montoBase * ventaReferencia : montoBase;
 
@@ -161,7 +163,7 @@ export default function App() {
 
     const movimientosOrdenados = [...movimientos].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
     return [...valoresFijosProyectados, ...movimientosOrdenados];
-  }, [movimientos, gastosFijos, cotizaciones]);
+  }, [movimientos, gastosFijos, cotizaciones, cicloSeleccionado]);
 
   return (
     <main className={`container ${menuCollapsed ? 'menu-colapsado' : ''}`}>
@@ -182,6 +184,10 @@ export default function App() {
           <div className="hero-meta">
             <span className="pill">Hogar demo #1</span>
             <span className="pill muted">Ciclo: {cicloActual}</span>
+            <label className="selector-ciclo">
+              Mes
+              <input type="month" value={cicloSeleccionado} onChange={(e) => setCicloSeleccionado(e.target.value)} />
+            </label>
             <span className="last-update">Actualizado: {ultimaActualizacion}</span>
           </div>
         </header>
