@@ -41,6 +41,7 @@ app.get('/movimientos', async (req, res) => {
   const hogarId = Number(req.query.hogar_id);
   const desde = parseFecha(req.query.desde);
   const hasta = parseFecha(req.query.hasta);
+  const incluirEliminados = String(req.query.incluir_eliminados || 'false') === 'true';
 
   if (!hogarId) {
     return res.status(400).json({ error: 'hogar_id es obligatorio' });
@@ -53,6 +54,10 @@ app.get('/movimientos', async (req, res) => {
   try {
     const params = [hogarId];
     const filtros = ['m.hogar_id = $1'];
+
+    if (!incluirEliminados) {
+      filtros.push('m.activo = true');
+    }
 
     if (desde) {
       params.push(desde);
@@ -73,6 +78,8 @@ app.get('/movimientos', async (req, res) => {
         m.monto_original,
         m.cotizacion_aplicada,
         m.monto_ars,
+        m.activo,
+        m.eliminado_en,
         tm.codigo AS tipo_movimiento,
         c.nombre AS categoria
       FROM movimientos m
@@ -178,8 +185,8 @@ app.patch('/movimientos/:id', async (req, res) => {
       SET descripcion = COALESCE($1, descripcion),
           categoria_id = COALESCE($2, categoria_id),
           cuenta_id = COALESCE($3, cuenta_id)
-      WHERE id = $4
-      RETURNING id, fecha, descripcion, categoria_id, cuenta_id
+      WHERE id = $4 AND activo = true
+      RETURNING id, fecha, descripcion, categoria_id, cuenta_id, activo
       `,
       [descripcion ?? null, categoria_id ?? null, cuenta_id ?? null, movimientoId]
     );
@@ -202,7 +209,15 @@ app.delete('/movimientos/:id', async (req, res) => {
   }
 
   try {
-    const { rowCount } = await pool.query('DELETE FROM movimientos WHERE id = $1', [movimientoId]);
+    const { rowCount } = await pool.query(
+      `
+      UPDATE movimientos
+      SET activo = false,
+          eliminado_en = NOW()
+      WHERE id = $1 AND activo = true
+      `,
+      [movimientoId]
+    );
 
     if (rowCount === 0) {
       return res.status(404).json({ error: 'Movimiento no encontrado' });

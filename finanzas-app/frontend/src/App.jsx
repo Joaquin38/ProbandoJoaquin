@@ -31,12 +31,13 @@ export default function App() {
   const [menuCollapsed, setMenuCollapsed] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [seccionActiva, setSeccionActiva] = useState('dashboard');
+  const [mostrarEliminados, setMostrarEliminados] = useState(false);
 
   const cargarDatos = async () => {
     try {
       setError('');
       const [movData, catData, resumenData, cotiData, gastosData] = await Promise.all([
-        getMovimientos(1),
+        getMovimientos(1, mostrarEliminados),
         getCategorias(1),
         getResumen(1),
         getCotizaciones(),
@@ -55,7 +56,7 @@ export default function App() {
 
   useEffect(() => {
     cargarDatos();
-  }, []);
+  }, [mostrarEliminados]);
 
   const handleCrearMovimiento = async (payload) => {
     try {
@@ -124,6 +125,14 @@ export default function App() {
   };
 
   const ultimaActualizacion = useMemo(() => new Date().toLocaleString('es-AR'), [movimientos, resumen, cotizaciones, gastosFijos]);
+  const cicloActual = useMemo(
+    () =>
+      new Date().toLocaleDateString('es-AR', {
+        month: 'long',
+        year: 'numeric'
+      }),
+    []
+  );
 
   return (
     <main className={`container ${menuCollapsed ? 'menu-colapsado' : ''}`}>
@@ -143,6 +152,7 @@ export default function App() {
           </div>
           <div className="hero-meta">
             <span className="pill">Hogar demo #1</span>
+            <span className="pill muted">Ciclo: {cicloActual}</span>
             <span className="last-update">Actualizado: {ultimaActualizacion}</span>
           </div>
         </header>
@@ -160,6 +170,14 @@ export default function App() {
                 <button type="button" onClick={abrirModalCrear}>
                   + Nuevo movimiento
                 </button>
+                <label className="toggle-eliminados">
+                  <input
+                    type="checkbox"
+                    checked={mostrarEliminados}
+                    onChange={(e) => setMostrarEliminados(e.target.checked)}
+                  />
+                  Ver eliminados
+                </label>
               </section>
 
               <MovimientosTable movimientos={movimientos} onEditar={handleEditar} onEliminar={handleEliminar} />

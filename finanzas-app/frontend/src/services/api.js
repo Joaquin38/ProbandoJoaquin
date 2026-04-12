@@ -7,9 +7,9 @@ function normalizeFetchError(error) {
   return error?.message || 'Ocurrió un error inesperado';
 }
 
-export async function getMovimientos(hogarId = 1) {
+export async function getMovimientos(hogarId = 1, incluirEliminados = false) {
   try {
-    const response = await fetch(`${API_URL}/movimientos?hogar_id=${hogarId}`);
+    const response = await fetch(`${API_URL}/movimientos?hogar_id=${hogarId}&incluir_eliminados=${incluirEliminados}`);
     if (!response.ok) throw new Error('No se pudieron obtener movimientos');
     return response.json();
   } catch (error) {

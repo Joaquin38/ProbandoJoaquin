@@ -162,9 +162,11 @@ Se agregó un frontend base en `frontend/` con:
 - botones de acción con íconos (✏️ editar / 🗑️ eliminar),
 - tabla de movimientos,
 - menú lateral colapsable fijo a la izquierda,
+- visualización del ciclo actual (ej: abril 2026),
 - panel de cotización del dólar,
 - sección de gastos fijos (alta + listado),
 - confirmación de eliminación en popup propio,
+- filtro para ver/ocultar movimientos eliminados,
 - conexión a API vía `VITE_API_URL`.
 
 ```bash
@@ -239,6 +241,12 @@ Para cargar un hogar/usuario/categorías demo y probar la API rápido:
 
 ```bash
 docker compose exec -T postgres psql -U finanzas -d finanzas_db < bd/02_datos_demo.sql
+```
+
+Si ya tenías una base creada de antes, aplicá también la migración de baja lógica en movimientos:
+
+```bash
+docker compose exec -T postgres psql -U finanzas -d finanzas_db < bd/03_movimientos_soft_delete.sql
 ```
 
 ---

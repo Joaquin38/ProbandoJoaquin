@@ -81,6 +81,7 @@ h1 { margin: 4px 0; font-size: 34px; }
 .acciones-panel { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .acciones-panel h2 { margin: 0; }
 .acciones-panel p { margin: 4px 0 0; color: #64748b; }
+.toggle-eliminados { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #334155; }
 
 .panel-header h2 { margin: 0; }
 .panel-header p { margin: 6px 0 0; color: #64748b; font-size: 14px; }
@@ -108,6 +109,8 @@ tbody tr:hover { background: rgba(226, 232, 240, 0.35); }
 .badge-ingreso { background: #dcfce7; color: #166534; }
 .badge-egreso { background: #fee2e2; color: #991b1b; }
 .badge-ahorro { background: #e0f2fe; color: #075985; }
+.badge-activo { background: #dcfce7; color: #166534; }
+.badge-eliminado { background: #fee2e2; color: #991b1b; }
 
 .cotizaciones-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
 .cotizacion-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; }

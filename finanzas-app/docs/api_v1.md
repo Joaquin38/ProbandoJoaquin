@@ -32,9 +32,10 @@
 ### Estado actual de implementación
 
 - ✅ `GET /movimientos?hogar_id=1[&desde=YYYY-MM-DD&hasta=YYYY-MM-DD]`
+- ✅ `GET /movimientos?hogar_id=1&incluir_eliminados=true|false`
 - ✅ `POST /movimientos`
 - ✅ `PATCH /movimientos/:id` (actualiza descripción/categoría/cuenta)
-- ✅ `DELETE /movimientos/:id`
+- ✅ `DELETE /movimientos/:id` (baja lógica)
 
 ## Gastos fijos
 
