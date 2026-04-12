@@ -185,6 +185,17 @@ Flujo diario típico:
 
 Si bajaste cambios nuevos del repo y cambió `package.json`, corré otra vez `npm install`.
 
+### Error común en frontend: "Failed to fetch"
+
+Suele pasar cuando backend no está levantado o falta reinstalar dependencias tras cambios.
+
+Checklist:
+
+1. En `backend/`: `npm install` (importante si cambió `package.json`) y `npm run dev`.
+2. Probar salud backend: `curl http://localhost:3000/salud`.
+3. En `frontend/.env` verificar `VITE_API_URL=http://localhost:3000`.
+4. Reiniciar `npm run dev` de frontend.
+
 Crear un movimiento demo:
 
 ```bash

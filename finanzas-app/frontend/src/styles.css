@@ -4,7 +4,7 @@
   background:
     radial-gradient(circle at top right, #dbeafe 0%, transparent 35%),
     radial-gradient(circle at bottom left, #dcfce7 0%, transparent 35%),
-    #f8fafc;
+    #eef2ff;
 }
 
 body {
@@ -16,6 +16,22 @@ body {
   max-width: 1120px;
   margin: 0 auto;
   padding: 28px;
+  position: relative;
+}
+
+.container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 26px;
+  background: linear-gradient(125deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.2));
+  backdrop-filter: blur(1px);
+}
+
+.container > * {
+  position: relative;
+  z-index: 1;
 }
 
 .hero {
@@ -65,11 +81,12 @@ h1 {
 
 .card,
 .panel {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.25);
   border-radius: 14px;
   padding: 16px;
-  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 12px 25px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(5px);
 }
 
 .card h3 {
@@ -119,8 +136,16 @@ h1 {
 .layout-grid {
   display: grid;
   grid-template-columns: 360px 1fr;
-  gap: 12px;
+  gap: 14px;
   align-items: start;
+}
+
+.panel-form {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(241, 245, 249, 0.92));
+}
+
+.panel-table {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.94));
 }
 
 .panel-header h2 {
@@ -176,6 +201,7 @@ button:disabled {
 .table-wrapper {
   overflow-x: auto;
   margin-top: 12px;
+  border-radius: 10px;
 }
 
 table {
@@ -189,6 +215,10 @@ td {
   border-bottom: 1px solid #e2e8f0;
   padding: 10px 6px;
   font-size: 14px;
+}
+
+tbody tr:hover {
+  background: rgba(226, 232, 240, 0.35);
 }
 
 .pill {
