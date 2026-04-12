@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const initialState = {
   fecha: new Date().toISOString().slice(0, 10),
@@ -9,8 +9,29 @@ const initialState = {
   moneda_original: 'ARS'
 };
 
-export default function NuevoMovimientoForm({ categorias, onCrear, loading }) {
+export default function NuevoMovimientoForm({ categorias, onCrear, loading, modo = 'crear', initialValues = null }) {
   const [form, setForm] = useState(initialState);
+
+  useEffect(() => {
+    if (!initialValues) {
+      setForm(initialState);
+      return;
+    }
+
+    setForm({
+      fecha: initialValues.fecha || initialState.fecha,
+      tipo_movimiento_id:
+        initialValues.tipo_movimiento === 'ingreso'
+          ? 1
+          : initialValues.tipo_movimiento === 'ahorro'
+          ? 3
+          : 2,
+      categoria_id: initialValues.categoria_id || '',
+      descripcion: initialValues.descripcion || '',
+      monto_ars: Number(initialValues.monto_ars || 0),
+      moneda_original: initialState.moneda_original
+    });
+  }, [initialValues]);
 
   const handleChange = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
@@ -30,13 +51,15 @@ export default function NuevoMovimientoForm({ categorias, onCrear, loading }) {
       creado_por_usuario_id: 1
     });
 
-    setForm((prev) => ({ ...initialState, fecha: prev.fecha }));
+    if (modo === 'crear') {
+      setForm((prev) => ({ ...initialState, fecha: prev.fecha }));
+    }
   };
 
   return (
     <section className="panel panel-form">
       <div className="panel-header">
-        <h2>Cargar movimiento</h2>
+        <h2>{modo === 'editar' ? 'Editar movimiento' : 'Cargar movimiento'}</h2>
         <p>Completá los campos para registrar ingresos, egresos o ahorro.</p>
       </div>
 
@@ -89,7 +112,7 @@ export default function NuevoMovimientoForm({ categorias, onCrear, loading }) {
         </label>
 
         <button type="submit" disabled={loading}>
-          {loading ? 'Guardando...' : 'Guardar movimiento'}
+          {loading ? 'Guardando...' : modo === 'editar' ? 'Guardar cambios' : 'Guardar movimiento'}
         </button>
       </form>
     </section>

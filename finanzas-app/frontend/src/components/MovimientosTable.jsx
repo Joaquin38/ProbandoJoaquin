@@ -1,4 +1,4 @@
-export default function MovimientosTable({ movimientos }) {
+export default function MovimientosTable({ movimientos, onEditar, onEliminar }) {
   return (
     <section className="panel panel-table">
       <div className="panel-header table-header">
@@ -15,6 +15,7 @@ export default function MovimientosTable({ movimientos }) {
               <th>Categoría</th>
               <th>Descripción</th>
               <th>Monto ARS</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -27,11 +28,21 @@ export default function MovimientosTable({ movimientos }) {
                 <td>{mov.categoria || '-'}</td>
                 <td>{mov.descripcion || '-'}</td>
                 <td>${Number(mov.monto_ars).toLocaleString('es-AR')}</td>
+                <td>
+                  <div className="acciones-inline">
+                    <button type="button" className="btn-inline" onClick={() => onEditar(mov)}>
+                      Editar
+                    </button>
+                    <button type="button" className="btn-inline danger" onClick={() => onEliminar(mov.id)}>
+                      Eliminar
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
             {movimientos.length === 0 && (
               <tr>
-                <td colSpan={5}>Todavía no hay movimientos cargados.</td>
+                <td colSpan={6}>Todavía no hay movimientos cargados.</td>
               </tr>
             )}
           </tbody>

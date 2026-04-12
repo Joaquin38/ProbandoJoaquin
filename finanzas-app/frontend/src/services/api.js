@@ -46,6 +46,42 @@ export async function createMovimiento(payload) {
   }
 }
 
+export async function updateMovimiento(id, payload) {
+  try {
+    const response = await fetch(`${API_URL}/movimientos/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const detail = await response.json().catch(() => ({}));
+      throw new Error(detail.error || 'No se pudo actualizar el movimiento');
+    }
+
+    return response.json();
+  } catch (error) {
+    throw new Error(normalizeFetchError(error));
+  }
+}
+
+export async function deleteMovimiento(id) {
+  try {
+    const response = await fetch(`${API_URL}/movimientos/${id}`, {
+      method: 'DELETE'
+    });
+
+    if (!response.ok) {
+      const detail = await response.json().catch(() => ({}));
+      throw new Error(detail.error || 'No se pudo eliminar el movimiento');
+    }
+
+    return response.json();
+  } catch (error) {
+    throw new Error(normalizeFetchError(error));
+  }
+}
+
 export async function getCategorias(hogarId = 1) {
   try {
     const response = await fetch(`${API_URL}/categorias?hogar_id=${hogarId}`);

@@ -158,8 +158,9 @@ Se agregó un frontend base en `frontend/` con:
 
 - resumen de ingresos/egresos/balance,
 - alta de movimientos vía modal popup,
+- edición y eliminación de movimientos desde la tabla,
 - tabla de movimientos,
-- menú lateral de navegación,
+- menú lateral colapsable fijo a la izquierda,
 - panel de cotización del dólar,
 - conexión a API vía `VITE_API_URL`.
 
