@@ -28,6 +28,12 @@ function esNumeroPositivo(value) {
   return Number.isFinite(number) && number > 0;
 }
 
+function resolveCiclo(ciclo, desde) {
+  if (ciclo && /^\d{4}-\d{2}$/.test(ciclo)) return ciclo;
+  if (desde) return String(desde).slice(0, 7);
+  return new Date().toISOString().slice(0, 7);
+}
+
 app.get('/salud', async (_req, res) => {
   try {
     await pool.query('SELECT 1');
