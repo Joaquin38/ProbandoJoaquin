@@ -165,7 +165,7 @@ Se agregó un frontend base en `frontend/` con:
 - visualización del ciclo actual (ej: abril 2026),
 - panel de cotización del dólar con actualización desde API pública,
 - sección de valores fijos (alta + listado),
-- ingresos fijos proyectados visibles dentro de la grilla principal de movimientos,
+- valores fijos proyectados (ingresos/egresos) visibles dentro de la grilla principal de movimientos,
 - confirmación de eliminación en popup propio,
 - filtro para ver/ocultar movimientos eliminados,
 - conexión a API vía `VITE_API_URL`.
