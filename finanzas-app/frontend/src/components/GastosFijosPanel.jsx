@@ -26,8 +26,8 @@ export default function GastosFijosPanel({ gastos, categorias, onCrear }) {
   return (
     <section className="panel">
       <div className="panel-header">
-        <h2>📌 Gastos fijos</h2>
-        <p>Definí costos recurrentes para proyectar mejor tu mes.</p>
+        <h2>📌 Valores fijos</h2>
+        <p>Definí importes recurrentes para contemplar gastos e ingresos fijos (por ejemplo, sueldo).</p>
       </div>
 
       <form className="form-grid" onSubmit={handleSubmit}>
@@ -66,7 +66,7 @@ export default function GastosFijosPanel({ gastos, categorias, onCrear }) {
           <input type="number" min="1" max="31" value={form.dia_vencimiento} onChange={(e) => setForm((p) => ({ ...p, dia_vencimiento: e.target.value }))} />
         </label>
 
-        <button type="submit">Guardar gasto fijo</button>
+        <button type="submit">Guardar valor fijo</button>
       </form>
 
       <div className="table-wrapper">
@@ -92,7 +92,7 @@ export default function GastosFijosPanel({ gastos, categorias, onCrear }) {
             ))}
             {gastos.length === 0 && (
               <tr>
-                <td colSpan={5}>Todavía no hay gastos fijos.</td>
+                <td colSpan={5}>Todavía no hay valores fijos.</td>
               </tr>
             )}
           </tbody>

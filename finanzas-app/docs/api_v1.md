@@ -37,7 +37,7 @@
 - ✅ `PATCH /movimientos/:id` (actualiza descripción/categoría/cuenta)
 - ✅ `DELETE /movimientos/:id` (baja lógica)
 
-## Gastos fijos
+## Valores fijos (gastos/ingresos recurrentes)
 
 - `GET /gastos-fijos`
 - `POST /gastos-fijos`

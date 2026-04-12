@@ -126,7 +126,7 @@ export async function createCotizacion(payload) {
 export async function getGastosFijos(hogarId = 1) {
   try {
     const response = await fetch(`${API_URL}/gastos-fijos?hogar_id=${hogarId}`);
-    if (!response.ok) throw new Error('No se pudieron obtener gastos fijos');
+    if (!response.ok) throw new Error('No se pudieron obtener valores fijos');
     return response.json();
   } catch (error) {
     throw new Error(normalizeFetchError(error));
@@ -143,7 +143,7 @@ export async function createGastoFijo(payload) {
 
     if (!response.ok) {
       const detail = await response.json().catch(() => ({}));
-      throw new Error(detail.error || 'No se pudo crear el gasto fijo');
+      throw new Error(detail.error || 'No se pudo crear el valor fijo');
     }
 
     return response.json();

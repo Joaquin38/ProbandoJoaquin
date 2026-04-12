@@ -1,7 +1,7 @@
 const items = [
   { key: 'dashboard', label: 'Dashboard', icon: '🏠' },
   { key: 'movimientos', label: 'Movimientos', icon: '💸' },
-  { key: 'gastos_fijos', label: 'Gastos fijos', icon: '📌' },
+  { key: 'gastos_fijos', label: 'Valores fijos', icon: '📌' },
   { key: 'cotizacion', label: 'Cotización dólar', icon: '💵' },
   { key: 'ahorros', label: 'Ahorros', icon: '🏦' },
   { key: 'reportes', label: 'Reportes', icon: '📊' }

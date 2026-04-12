@@ -1,6 +1,6 @@
 # App de Finanzas Personales (ARS/USD)
 
-Base inicial del proyecto para gestionar finanzas personales por mes, con foco en pesos, soporte de ingresos en dólares, gastos fijos, consumos, ahorro y cotización diaria.
+Base inicial del proyecto para gestionar finanzas personales por mes, con foco en pesos, soporte de ingresos en dólares, valores fijos (gastos/ingresos), consumos, ahorro y cotización diaria.
 
 ## Stack objetivo
 
@@ -164,7 +164,7 @@ Se agregó un frontend base en `frontend/` con:
 - menú lateral colapsable fijo a la izquierda,
 - visualización del ciclo actual (ej: abril 2026),
 - panel de cotización del dólar,
-- sección de gastos fijos (alta + listado),
+- sección de valores fijos (alta + listado),
 - ingresos fijos proyectados visibles dentro de la grilla principal de movimientos,
 - confirmación de eliminación en popup propio,
 - filtro para ver/ocultar movimientos eliminados,

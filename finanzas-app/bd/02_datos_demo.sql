@@ -21,8 +21,14 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO categorias (id, hogar_id, nombre, tipo_movimiento_id)
 VALUES
   (1, 1, 'Sueldo', 1),
-  (2, 1, 'Alimentos', 2),
-  (3, 1, 'Ahorro', 3)
+  (2, 1, 'Freelance', 1),
+  (3, 1, 'Alquiler (ingreso)', 1),
+  (4, 1, 'Alquiler', 2),
+  (5, 1, 'Supermercado', 2),
+  (6, 1, 'Servicios', 2),
+  (7, 1, 'Transporte', 2),
+  (8, 1, 'Salud', 2),
+  (9, 1, 'Ahorro', 3)
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO cotizaciones_dolar (fecha, fuente, compra, venta)
