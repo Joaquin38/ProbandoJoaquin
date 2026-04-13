@@ -134,28 +134,55 @@ app.get('/movimientos', async (req, res) => {
       filtros.push(`m.fecha <= $${params.length}`);
     }
 
-    const query = `
-      SELECT
-        m.id,
-        m.fecha,
-        m.descripcion,
-        m.moneda_original,
-        m.monto_original,
-        m.cotizacion_aplicada,
-        m.monto_ars,
-        m.usa_ahorro,
-        m.activo,
-        m.eliminado_en,
-        tm.codigo AS tipo_movimiento,
-        c.nombre AS categoria
-      FROM movimientos m
-      JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
-      LEFT JOIN categorias c ON c.id = m.categoria_id
-      WHERE ${filtros.join(' AND ')}
-      ORDER BY m.fecha DESC, m.id DESC
-    `;
-
-    const { rows } = await pool.query(query, params);
+    let rows = [];
+    try {
+      const query = `
+        SELECT
+          m.id,
+          m.fecha,
+          m.descripcion,
+          m.moneda_original,
+          m.monto_original,
+          m.cotizacion_aplicada,
+          m.monto_ars,
+          m.usa_ahorro,
+          m.activo,
+          m.eliminado_en,
+          tm.codigo AS tipo_movimiento,
+          c.nombre AS categoria
+        FROM movimientos m
+        JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
+        LEFT JOIN categorias c ON c.id = m.categoria_id
+        WHERE ${filtros.join(' AND ')}
+        ORDER BY m.fecha DESC, m.id DESC
+      `;
+      const result = await pool.query(query, params);
+      rows = result.rows;
+    } catch (queryError) {
+      if (queryError.code !== '42703') throw queryError;
+      const queryFallback = `
+        SELECT
+          m.id,
+          m.fecha,
+          m.descripcion,
+          m.moneda_original,
+          m.monto_original,
+          m.cotizacion_aplicada,
+          m.monto_ars,
+          false AS usa_ahorro,
+          m.activo,
+          m.eliminado_en,
+          tm.codigo AS tipo_movimiento,
+          c.nombre AS categoria
+        FROM movimientos m
+        JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
+        LEFT JOIN categorias c ON c.id = m.categoria_id
+        WHERE ${filtros.join(' AND ')}
+        ORDER BY m.fecha DESC, m.id DESC
+      `;
+      const resultFallback = await pool.query(queryFallback, params);
+      rows = resultFallback.rows;
+    }
     return res.status(200).json({ total: rows.length, items: rows });
   } catch (error) {
     return res.status(500).json({ error: 'Error consultando movimientos', detalle: error.message });
@@ -197,42 +224,77 @@ app.post('/movimientos', async (req, res) => {
   }
 
   try {
-    const query = `
-      INSERT INTO movimientos (
+    let rows = [];
+    try {
+      const query = `
+        INSERT INTO movimientos (
+          hogar_id,
+          cuenta_id,
+          tipo_movimiento_id,
+          categoria_id,
+          fecha,
+          descripcion,
+          moneda_original,
+          monto_original,
+          cotizacion_aplicada,
+          monto_ars,
+          usa_ahorro,
+          creado_por_usuario_id
+        ) VALUES (
+          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12
+        )
+        RETURNING id, fecha, moneda_original, monto_original, monto_ars
+      `;
+      const values = [
         hogar_id,
-        cuenta_id,
+        cuenta_id || null,
         tipo_movimiento_id,
-        categoria_id,
+        categoria_id || null,
         fecha,
-        descripcion,
+        descripcion || null,
         moneda_original,
         monto_original,
-        cotizacion_aplicada,
+        cotizacion_aplicada || null,
         monto_ars,
-        usa_ahorro,
+        Boolean(usa_ahorro),
         creado_por_usuario_id
-      ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12
-      )
-      RETURNING id, fecha, moneda_original, monto_original, monto_ars
-    `;
-
-    const values = [
-      hogar_id,
-      cuenta_id || null,
-      tipo_movimiento_id,
-      categoria_id || null,
-      fecha,
-      descripcion || null,
-      moneda_original,
-      monto_original,
-      cotizacion_aplicada || null,
-      monto_ars,
-      Boolean(usa_ahorro),
-      creado_por_usuario_id
-    ];
-
-    const { rows } = await pool.query(query, values);
+      ];
+      rows = (await pool.query(query, values)).rows;
+    } catch (queryError) {
+      if (queryError.code !== '42703') throw queryError;
+      const queryFallback = `
+        INSERT INTO movimientos (
+          hogar_id,
+          cuenta_id,
+          tipo_movimiento_id,
+          categoria_id,
+          fecha,
+          descripcion,
+          moneda_original,
+          monto_original,
+          cotizacion_aplicada,
+          monto_ars,
+          creado_por_usuario_id
+        ) VALUES (
+          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11
+        )
+        RETURNING id, fecha, moneda_original, monto_original, monto_ars
+      `;
+      const valuesFallback = [
+        hogar_id,
+        cuenta_id || null,
+        tipo_movimiento_id,
+        categoria_id || null,
+        fecha,
+        descripcion || null,
+        moneda_original,
+        monto_original,
+        cotizacion_aplicada || null,
+        monto_ars,
+        creado_por_usuario_id
+      ];
+      rows = (await pool.query(queryFallback, valuesFallback)).rows;
+    }
     return res.status(201).json({ ok: true, movimiento: rows[0] });
   } catch (error) {
     return res.status(500).json({ error: 'Error creando movimiento', detalle: error.message });
@@ -403,22 +465,47 @@ app.get('/dashboard/resumen', async (req, res) => {
   const hasta = `${cicloConsulta}-${String(new Date(Number(anioTexto), Number(mesTexto), 0).getDate()).padStart(2, '0')}`;
 
   try {
-    const { rows } = await pool.query(
-      `
-      SELECT
-        COALESCE(SUM(CASE WHEN tm.codigo = 'ingreso' AND m.fecha BETWEEN $2 AND $3 THEN m.monto_ars END), 0) AS ingresos,
-        COALESCE(SUM(CASE WHEN tm.codigo = 'egreso' AND m.fecha BETWEEN $2 AND $3 THEN m.monto_ars END), 0) AS egresos,
-        COALESCE(SUM(CASE WHEN tm.codigo = 'egreso' AND m.usa_ahorro = true AND m.fecha BETWEEN $2 AND $3 THEN m.monto_ars END), 0) AS egresos_desde_ahorro,
-        COALESCE(SUM(CASE WHEN tm.codigo = 'ahorro' AND m.fecha <= $3 THEN m.monto_ars END), 0) AS ahorros_acumulados,
-        COALESCE(SUM(CASE WHEN tm.codigo = 'egreso' AND m.usa_ahorro = true AND m.fecha <= $3 THEN m.monto_ars END), 0) AS egresos_desde_ahorro_acumulados,
-        COALESCE(COUNT(CASE WHEN m.fecha BETWEEN $2 AND $3 THEN 1 END), 0) AS cantidad_movimientos
-      FROM movimientos m
-      JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
-      WHERE m.hogar_id = $1
-        AND m.activo = true
-      `,
-      [hogarId, desde, hasta]
-    );
+    let rows = [];
+    try {
+      rows = (
+        await pool.query(
+          `
+          SELECT
+            COALESCE(SUM(CASE WHEN tm.codigo = 'ingreso' AND m.fecha BETWEEN $2 AND $3 THEN m.monto_ars END), 0) AS ingresos,
+            COALESCE(SUM(CASE WHEN tm.codigo = 'egreso' AND m.fecha BETWEEN $2 AND $3 THEN m.monto_ars END), 0) AS egresos,
+            COALESCE(SUM(CASE WHEN tm.codigo = 'egreso' AND m.usa_ahorro = true AND m.fecha BETWEEN $2 AND $3 THEN m.monto_ars END), 0) AS egresos_desde_ahorro,
+            COALESCE(SUM(CASE WHEN tm.codigo = 'ahorro' AND m.fecha <= $3 THEN m.monto_ars END), 0) AS ahorros_acumulados,
+            COALESCE(SUM(CASE WHEN tm.codigo = 'egreso' AND m.usa_ahorro = true AND m.fecha <= $3 THEN m.monto_ars END), 0) AS egresos_desde_ahorro_acumulados,
+            COALESCE(COUNT(CASE WHEN m.fecha BETWEEN $2 AND $3 THEN 1 END), 0) AS cantidad_movimientos
+          FROM movimientos m
+          JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
+          WHERE m.hogar_id = $1
+            AND m.activo = true
+          `,
+          [hogarId, desde, hasta]
+        )
+      ).rows;
+    } catch (queryError) {
+      if (queryError.code !== '42703') throw queryError;
+      rows = (
+        await pool.query(
+          `
+          SELECT
+            COALESCE(SUM(CASE WHEN tm.codigo = 'ingreso' AND m.fecha BETWEEN $2 AND $3 THEN m.monto_ars END), 0) AS ingresos,
+            COALESCE(SUM(CASE WHEN tm.codigo = 'egreso' AND m.fecha BETWEEN $2 AND $3 THEN m.monto_ars END), 0) AS egresos,
+            0 AS egresos_desde_ahorro,
+            COALESCE(SUM(CASE WHEN tm.codigo = 'ahorro' AND m.fecha <= $3 THEN m.monto_ars END), 0) AS ahorros_acumulados,
+            0 AS egresos_desde_ahorro_acumulados,
+            COALESCE(COUNT(CASE WHEN m.fecha BETWEEN $2 AND $3 THEN 1 END), 0) AS cantidad_movimientos
+          FROM movimientos m
+          JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
+          WHERE m.hogar_id = $1
+            AND m.activo = true
+          `,
+          [hogarId, desde, hasta]
+        )
+      ).rows;
+    }
 
     const resumen = rows[0] || { ingresos: 0, egresos: 0, egresos_desde_ahorro: 0, ahorros_acumulados: 0, egresos_desde_ahorro_acumulados: 0, cantidad_movimientos: 0 };
     const ahorrosNetos = Number(resumen.ahorros_acumulados) - Number(resumen.egresos_desde_ahorro_acumulados);
