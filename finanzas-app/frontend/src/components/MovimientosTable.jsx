@@ -5,7 +5,16 @@ function formatFecha(fecha) {
   return date.toLocaleDateString('es-AR');
 }
 
-export default function MovimientosTable({ movimientos, onEditar, onEliminar, onNuevo, mostrarEliminados, onToggleEliminados }) {
+export default function MovimientosTable({
+  movimientos,
+  onEditar,
+  onEliminar,
+  onNuevo,
+  mostrarEliminados,
+  onToggleEliminados,
+  onEditarFijo,
+  onEliminarFijo
+}) {
   return (
     <section className="panel panel-table">
       <div className="panel-header table-header">
@@ -62,8 +71,8 @@ export default function MovimientosTable({ movimientos, onEditar, onEliminar, on
                       type="button"
                       className="btn-inline"
                       title="Editar"
-                      disabled={!mov.activo || mov.esProyectado}
-                      onClick={() => onEditar(mov)}
+                      disabled={!mov.activo}
+                      onClick={() => (mov.esProyectado ? onEditarFijo?.(mov) : onEditar(mov))}
                     >
                       ✏️
                     </button>
@@ -71,8 +80,8 @@ export default function MovimientosTable({ movimientos, onEditar, onEliminar, on
                       type="button"
                       className="btn-inline danger"
                       title="Eliminar"
-                      disabled={!mov.activo || mov.esProyectado}
-                      onClick={() => onEliminar(mov.id)}
+                      disabled={!mov.activo}
+                      onClick={() => (mov.esProyectado ? onEliminarFijo?.(mov) : onEliminar(mov.id))}
                     >
                       🗑️
                     </button>

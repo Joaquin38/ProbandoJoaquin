@@ -520,30 +520,60 @@ app.get('/gastos-fijos', async (req, res) => {
   const cicloConsulta = resolveCiclo(ciclo);
 
   try {
-    const { rows: gastos } = await pool.query(
-      `
-      SELECT
-        gf.id,
-        gf.descripcion,
-        gf.moneda,
-        gf.monto_base,
-        gf.dia_vencimiento,
-        gf.categoria_id,
-        gf.activo_desde_ciclo,
-        gf.activo_hasta_ciclo,
-        c.nombre AS categoria,
-        tm.codigo AS tipo_movimiento
-      FROM gastos_fijos gf
-      JOIN categorias c ON c.id = gf.categoria_id
-      JOIN tipos_movimiento tm ON tm.id = c.tipo_movimiento_id
-      WHERE gf.hogar_id = $1
-        AND gf.activo = true
-        AND (gf.activo_desde_ciclo IS NULL OR gf.activo_desde_ciclo <= $2)
-        AND (gf.activo_hasta_ciclo IS NULL OR gf.activo_hasta_ciclo >= $2)
-      ORDER BY gf.id DESC
-      `,
-      [hogarId, cicloConsulta]
-    );
+    let gastos = [];
+    try {
+      const { rows } = await pool.query(
+        `
+        SELECT
+          gf.id,
+          gf.descripcion,
+          gf.moneda,
+          gf.monto_base,
+          gf.dia_vencimiento,
+          gf.categoria_id,
+          gf.activo_desde_ciclo,
+          gf.activo_hasta_ciclo,
+          c.nombre AS categoria,
+          tm.codigo AS tipo_movimiento
+        FROM gastos_fijos gf
+        JOIN categorias c ON c.id = gf.categoria_id
+        JOIN tipos_movimiento tm ON tm.id = c.tipo_movimiento_id
+        WHERE gf.hogar_id = $1
+          AND gf.activo = true
+          AND (gf.activo_desde_ciclo IS NULL OR gf.activo_desde_ciclo <= $2)
+          AND (gf.activo_hasta_ciclo IS NULL OR gf.activo_hasta_ciclo >= $2)
+        ORDER BY gf.id DESC
+        `,
+        [hogarId, cicloConsulta]
+      );
+      gastos = rows;
+    } catch (queryError) {
+      if (queryError.code !== '42703') throw queryError;
+
+      const { rows } = await pool.query(
+        `
+        SELECT
+          gf.id,
+          gf.descripcion,
+          gf.moneda,
+          gf.monto_base,
+          gf.dia_vencimiento,
+          gf.categoria_id,
+          NULL::VARCHAR(7) AS activo_desde_ciclo,
+          NULL::VARCHAR(7) AS activo_hasta_ciclo,
+          c.nombre AS categoria,
+          tm.codigo AS tipo_movimiento
+        FROM gastos_fijos gf
+        JOIN categorias c ON c.id = gf.categoria_id
+        JOIN tipos_movimiento tm ON tm.id = c.tipo_movimiento_id
+        WHERE gf.hogar_id = $1
+          AND gf.activo = true
+        ORDER BY gf.id DESC
+        `,
+        [hogarId]
+      );
+      gastos = rows;
+    }
 
     const fechaCorte = finDeCiclo(cicloConsulta).toISOString().slice(0, 10);
     const items = [];

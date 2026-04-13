@@ -40,7 +40,7 @@ export default function App() {
   const cargarDatos = async () => {
     try {
       setError('');
-      const [movData, catData, resumenData, cotiData, gastosData] = await Promise.all([
+      const [movData, catData, resumenData, cotiData, gastosData] = await Promise.allSettled([
         getMovimientos(1, mostrarEliminados, cicloSeleccionado),
         getCategorias(1),
         getResumen(1, cicloSeleccionado),
@@ -48,11 +48,16 @@ export default function App() {
         getGastosFijos(1, cicloSeleccionado)
       ]);
 
-      setMovimientos(movData.items || []);
-      setCategorias(catData.items || []);
-      setResumen(resumenData || {});
-      setCotizaciones(cotiData.items || []);
-      setGastosFijos(gastosData.items || []);
+      if (movData.status === 'fulfilled') setMovimientos(movData.value.items || []);
+      if (catData.status === 'fulfilled') setCategorias(catData.value.items || []);
+      if (resumenData.status === 'fulfilled') setResumen(resumenData.value || {});
+      if (cotiData.status === 'fulfilled') setCotizaciones(cotiData.value.items || []);
+      if (gastosData.status === 'fulfilled') setGastosFijos(gastosData.value.items || []);
+
+      const errores = [movData, catData, resumenData, cotiData, gastosData].filter((r) => r.status === 'rejected');
+      if (errores.length > 0) {
+        setError(errores[0].reason?.message || 'Hubo errores parciales al cargar el dashboard');
+      }
     } catch (err) {
       setError(err.message);
     }
@@ -135,6 +140,22 @@ export default function App() {
     setOpenModal(true);
   };
 
+  const handleEditarFijoEnGrilla = async (movimiento) => {
+    const descripcion = window.prompt('Descripción del valor fijo:', movimiento.descripcion?.replace(' (valor fijo)', '') || '');
+    if (!descripcion) return;
+    const montoTexto = window.prompt('Monto base:', String(movimiento.monto_ars || 0));
+    if (!montoTexto) return;
+
+    await handleEditarGastoFijo(movimiento.gasto_fijo_id, {
+      descripcion,
+      monto_base: Number(montoTexto)
+    });
+  };
+
+  const handleEliminarFijoEnGrilla = async (movimiento) => {
+    await handleEliminarGastoFijoEnCiclo(movimiento.gasto_fijo_id);
+  };
+
   const handleEliminar = async (id) => {
     setDeleteTargetId(id);
   };
@@ -184,6 +205,7 @@ export default function App() {
 
         return {
           id: `valor-fijo-${item.id}`,
+          gasto_fijo_id: item.id,
           fecha,
           tipo_movimiento: item.tipo_movimiento,
           categoria: item.categoria,
@@ -239,6 +261,8 @@ export default function App() {
                 onNuevo={abrirModalCrear}
                 mostrarEliminados={mostrarEliminados}
                 onToggleEliminados={setMostrarEliminados}
+                onEditarFijo={handleEditarFijoEnGrilla}
+                onEliminarFijo={handleEliminarFijoEnGrilla}
               />
             </>
           )}
