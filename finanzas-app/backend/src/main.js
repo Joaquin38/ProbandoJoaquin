@@ -143,6 +143,7 @@ app.get('/movimientos', async (req, res) => {
         m.monto_original,
         m.cotizacion_aplicada,
         m.monto_ars,
+        m.usa_ahorro,
         m.activo,
         m.eliminado_en,
         tm.codigo AS tipo_movimiento,
@@ -173,6 +174,7 @@ app.post('/movimientos', async (req, res) => {
     monto_original,
     cotizacion_aplicada,
     monto_ars,
+    usa_ahorro,
     creado_por_usuario_id
   } = req.body;
 
@@ -207,9 +209,10 @@ app.post('/movimientos', async (req, res) => {
         monto_original,
         cotizacion_aplicada,
         monto_ars,
+        usa_ahorro,
         creado_por_usuario_id
       ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12
       )
       RETURNING id, fecha, moneda_original, monto_original, monto_ars
     `;
@@ -225,6 +228,7 @@ app.post('/movimientos', async (req, res) => {
       monto_original,
       cotizacion_aplicada || null,
       monto_ars,
+      Boolean(usa_ahorro),
       creado_por_usuario_id
     ];
 
@@ -383,35 +387,51 @@ app.post('/etiquetas', async (req, res) => {
 
 app.get('/dashboard/resumen', async (req, res) => {
   const hogarId = Number(req.query.hogar_id);
+  const ciclo = req.query.ciclo;
 
   if (!hogarId) {
     return res.status(400).json({ error: 'hogar_id es obligatorio' });
   }
 
+  if (ciclo && !cicloEsValido(ciclo)) {
+    return res.status(400).json({ error: 'ciclo debe tener formato YYYY-MM' });
+  }
+
+  const cicloConsulta = resolveCiclo(ciclo);
+  const [anioTexto, mesTexto] = cicloConsulta.split('-');
+  const desde = `${cicloConsulta}-01`;
+  const hasta = `${cicloConsulta}-${String(new Date(Number(anioTexto), Number(mesTexto), 0).getDate()).padStart(2, '0')}`;
+
   try {
     const { rows } = await pool.query(
       `
       SELECT
-        COALESCE(SUM(CASE WHEN tm.codigo = 'ingreso' THEN m.monto_ars END), 0) AS ingresos,
-        COALESCE(SUM(CASE WHEN tm.codigo = 'egreso' THEN m.monto_ars END), 0) AS egresos,
-        COALESCE(SUM(CASE WHEN tm.codigo = 'ahorro' THEN m.monto_ars END), 0) AS ahorros,
-        COALESCE(COUNT(m.id), 0) AS cantidad_movimientos
+        COALESCE(SUM(CASE WHEN tm.codigo = 'ingreso' AND m.fecha BETWEEN $2 AND $3 THEN m.monto_ars END), 0) AS ingresos,
+        COALESCE(SUM(CASE WHEN tm.codigo = 'egreso' AND m.fecha BETWEEN $2 AND $3 THEN m.monto_ars END), 0) AS egresos,
+        COALESCE(SUM(CASE WHEN tm.codigo = 'egreso' AND m.usa_ahorro = true AND m.fecha BETWEEN $2 AND $3 THEN m.monto_ars END), 0) AS egresos_desde_ahorro,
+        COALESCE(SUM(CASE WHEN tm.codigo = 'ahorro' AND m.fecha <= $3 THEN m.monto_ars END), 0) AS ahorros_acumulados,
+        COALESCE(SUM(CASE WHEN tm.codigo = 'egreso' AND m.usa_ahorro = true AND m.fecha <= $3 THEN m.monto_ars END), 0) AS egresos_desde_ahorro_acumulados,
+        COALESCE(COUNT(CASE WHEN m.fecha BETWEEN $2 AND $3 THEN 1 END), 0) AS cantidad_movimientos
       FROM movimientos m
       JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
       WHERE m.hogar_id = $1
+        AND m.activo = true
       `,
-      [hogarId]
+      [hogarId, desde, hasta]
     );
 
-    const resumen = rows[0] || { ingresos: 0, egresos: 0, ahorros: 0, cantidad_movimientos: 0 };
-    const balance = Number(resumen.ingresos) - Number(resumen.egresos);
+    const resumen = rows[0] || { ingresos: 0, egresos: 0, egresos_desde_ahorro: 0, ahorros_acumulados: 0, egresos_desde_ahorro_acumulados: 0, cantidad_movimientos: 0 };
+    const ahorrosNetos = Number(resumen.ahorros_acumulados) - Number(resumen.egresos_desde_ahorro_acumulados);
+    const balance = Number(resumen.ingresos) - (Number(resumen.egresos) - Number(resumen.egresos_desde_ahorro));
 
     return res.status(200).json({
       ingresos: Number(resumen.ingresos),
       egresos: Number(resumen.egresos),
-      ahorros: Number(resumen.ahorros),
+      egresos_desde_ahorro: Number(resumen.egresos_desde_ahorro),
+      ahorros: ahorrosNetos,
       balance,
-      cantidad_movimientos: Number(resumen.cantidad_movimientos)
+      cantidad_movimientos: Number(resumen.cantidad_movimientos),
+      ciclo: cicloConsulta
     });
   } catch (error) {
     return res.status(500).json({ error: 'Error consultando resumen', detalle: error.message });

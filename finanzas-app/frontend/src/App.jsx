@@ -43,7 +43,7 @@ export default function App() {
       const [movData, catData, resumenData, cotiData, gastosData] = await Promise.all([
         getMovimientos(1, mostrarEliminados, cicloSeleccionado),
         getCategorias(1),
-        getResumen(1),
+        getResumen(1, cicloSeleccionado),
         getCotizaciones(),
         getGastosFijos(1, cicloSeleccionado)
       ]);

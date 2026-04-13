@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS movimientos (
   monto_original NUMERIC(14,2) NOT NULL CHECK (monto_original > 0),
   cotizacion_aplicada NUMERIC(14,4),
   monto_ars NUMERIC(14,2) NOT NULL CHECK (monto_ars > 0),
+  usa_ahorro BOOLEAN NOT NULL DEFAULT FALSE,
   activo BOOLEAN NOT NULL DEFAULT TRUE,
   eliminado_en TIMESTAMPTZ,
   creado_por_usuario_id BIGINT NOT NULL REFERENCES usuarios(id),

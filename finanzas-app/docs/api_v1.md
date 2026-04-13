@@ -33,7 +33,7 @@
 
 - ✅ `GET /movimientos?hogar_id=1[&desde=YYYY-MM-DD&hasta=YYYY-MM-DD]`
 - ✅ `GET /movimientos?hogar_id=1&incluir_eliminados=true|false`
-- ✅ `POST /movimientos`
+- ✅ `POST /movimientos` (`usa_ahorro=true|false` para egresos)
 - ✅ `PATCH /movimientos/:id` (actualiza descripción/categoría/cuenta)
 - ✅ `DELETE /movimientos/:id` (baja lógica)
 
@@ -74,3 +74,4 @@
 ### Estado actual de implementación
 
 - ✅ `GET /dashboard/resumen?hogar_id=1`
+- ✅ `GET /dashboard/resumen?hogar_id=1&ciclo=YYYY-MM` (ahorro acumulado por ciclo)

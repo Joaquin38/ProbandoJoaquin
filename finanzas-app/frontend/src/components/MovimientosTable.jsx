@@ -46,7 +46,10 @@ export default function MovimientosTable({ movimientos, onEditar, onEliminar, on
                   {mov.esProyectado && <span className="badge badge-fijo">fijo</span>}
                 </td>
                 <td>{mov.categoria || '-'}</td>
-                <td>{mov.descripcion || '-'}</td>
+                <td>
+                  {mov.descripcion || '-'}
+                  {mov.usa_ahorro && <span className="badge badge-fijo">usa ahorro</span>}
+                </td>
                 <td>${Number(mov.monto_ars).toLocaleString('es-AR')}</td>
                 <td>
                   <span className={`badge ${mov.activo ? 'badge-activo' : 'badge-eliminado'}`}>

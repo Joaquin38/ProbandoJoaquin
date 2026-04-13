@@ -42,9 +42,11 @@ export async function getMovimientos(hogarId = 1, incluirEliminados = false, cic
   }
 }
 
-export async function getResumen(hogarId = 1) {
+export async function getResumen(hogarId = 1, ciclo) {
   try {
-    const response = await fetch(`${API_URL}/dashboard/resumen?hogar_id=${hogarId}`);
+    const searchParams = new URLSearchParams({ hogar_id: String(hogarId) });
+    if (ciclo) searchParams.set('ciclo', ciclo);
+    const response = await fetch(`${API_URL}/dashboard/resumen?${searchParams.toString()}`);
     if (!response.ok) throw new Error('No se pudo obtener resumen');
     return response.json();
   } catch (error) {

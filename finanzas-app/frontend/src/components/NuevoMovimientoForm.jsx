@@ -6,7 +6,8 @@ const initialState = {
   categoria_id: '',
   descripcion: '',
   monto_ars: '',
-  moneda_original: 'ARS'
+  moneda_original: 'ARS',
+  usa_ahorro: false
 };
 
 function normalizeInputDate(value) {
@@ -39,7 +40,8 @@ export default function NuevoMovimientoForm({ categorias, onCrear, loading, modo
       categoria_id: initialValues.categoria_id || '',
       descripcion: initialValues.descripcion || '',
       monto_ars: Number(initialValues.monto_ars || 0),
-      moneda_original: initialState.moneda_original
+      moneda_original: initialState.moneda_original,
+      usa_ahorro: Boolean(initialValues.usa_ahorro)
     });
   }, [initialValues]);
 
@@ -58,6 +60,7 @@ export default function NuevoMovimientoForm({ categorias, onCrear, loading, modo
       moneda_original: form.moneda_original,
       monto_original: Number(form.monto_ars),
       monto_ars: Number(form.monto_ars),
+      usa_ahorro: Number(form.tipo_movimiento_id) === 2 ? Boolean(form.usa_ahorro) : false,
       creado_por_usuario_id: 1
     });
 
@@ -120,6 +123,17 @@ export default function NuevoMovimientoForm({ categorias, onCrear, loading, modo
             placeholder="Ej: Supermercado, sueldo, transferencia"
           />
         </label>
+
+        {Number(form.tipo_movimiento_id) === 2 && (
+          <label className="full-width">
+            <input
+              type="checkbox"
+              checked={Boolean(form.usa_ahorro)}
+              onChange={(e) => handleChange('usa_ahorro', e.target.checked)}
+            />
+            Este egreso se paga con ahorros acumulados
+          </label>
+        )}
 
         <button type="submit" disabled={loading}>
           {loading ? 'Guardando...' : modo === 'editar' ? 'Guardar cambios' : 'Guardar movimiento'}

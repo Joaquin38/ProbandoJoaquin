@@ -168,6 +168,7 @@ Se agregó un frontend base en `frontend/` con:
 - sección de valores fijos (alta + listado),
 - valores fijos proyectados (ingresos/egresos) visibles dentro de la grilla principal de movimientos,
 - edición, ajuste por fecha y eliminación de valores fijos a partir de un ciclo específico,
+- egresos con check "usa ahorro" para descontar del ahorro acumulado en balance/resumen,
 - confirmación de eliminación en popup propio,
 - filtro para ver/ocultar movimientos eliminados,
 - conexión a API vía `VITE_API_URL`.
@@ -251,6 +252,7 @@ Si ya tenías una base creada de antes, aplicá también estas migraciones:
 ```bash
 docker compose exec -T postgres psql -U finanzas -d finanzas_db < bd/03_movimientos_soft_delete.sql
 docker compose exec -T postgres psql -U finanzas -d finanzas_db < bd/04_valores_fijos_por_ciclo.sql
+docker compose exec -T postgres psql -U finanzas -d finanzas_db < bd/05_movimientos_usa_ahorro.sql
 ```
 
 En PowerShell usá este formato (porque `<` da error):
@@ -258,6 +260,7 @@ En PowerShell usá este formato (porque `<` da error):
 ```powershell
 Get-Content .\bd\03_movimientos_soft_delete.sql | docker compose exec -T postgres psql -U finanzas -d finanzas_db
 Get-Content .\bd\04_valores_fijos_por_ciclo.sql | docker compose exec -T postgres psql -U finanzas -d finanzas_db
+Get-Content .\bd\05_movimientos_usa_ahorro.sql | docker compose exec -T postgres psql -U finanzas -d finanzas_db
 ```
 
 ---
