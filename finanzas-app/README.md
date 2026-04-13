@@ -169,6 +169,7 @@ Se agregó un frontend base en `frontend/` con:
 - valores fijos proyectados (ingresos/egresos) visibles dentro de la grilla principal de movimientos,
 - edición, ajuste por fecha y eliminación de valores fijos a partir de un ciclo específico,
 - egresos con check "usa ahorro" para descontar del ahorro acumulado en balance/resumen,
+- categorías filtradas por tipo (ingreso/egreso/ahorro) para evitar combinaciones inválidas,
 - confirmación de eliminación en popup propio,
 - filtro para ver/ocultar movimientos eliminados,
 - conexión a API vía `VITE_API_URL`.

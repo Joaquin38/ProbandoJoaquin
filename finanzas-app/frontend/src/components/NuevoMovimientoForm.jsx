@@ -22,6 +22,9 @@ function normalizeInputDate(value) {
 
 export default function NuevoMovimientoForm({ categorias, onCrear, loading, modo = 'crear', initialValues = null }) {
   const [form, setForm] = useState(initialState);
+  const tipoSeleccionado =
+    Number(form.tipo_movimiento_id) === 1 ? 'ingreso' : Number(form.tipo_movimiento_id) === 3 ? 'ahorro' : 'egreso';
+  const categoriasFiltradas = categorias.filter((categoria) => categoria.tipo_movimiento === tipoSeleccionado);
 
   useEffect(() => {
     if (!initialValues) {
@@ -44,6 +47,14 @@ export default function NuevoMovimientoForm({ categorias, onCrear, loading, modo
       usa_ahorro: Boolean(initialValues.usa_ahorro)
     });
   }, [initialValues]);
+
+  useEffect(() => {
+    if (!form.categoria_id) return;
+    const existe = categoriasFiltradas.some((categoria) => Number(categoria.id) === Number(form.categoria_id));
+    if (!existe) {
+      setForm((prev) => ({ ...prev, categoria_id: '' }));
+    }
+  }, [tipoSeleccionado, categoriasFiltradas, form.categoria_id]);
 
   const handleChange = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
@@ -95,7 +106,7 @@ export default function NuevoMovimientoForm({ categorias, onCrear, loading, modo
           Categoría
           <select value={form.categoria_id} onChange={(e) => handleChange('categoria_id', e.target.value)}>
             <option value="">Sin categoría</option>
-            {categorias.map((categoria) => (
+            {categoriasFiltradas.map((categoria) => (
               <option key={categoria.id} value={categoria.id}>
                 {categoria.nombre}
               </option>

@@ -33,7 +33,7 @@
 
 - ✅ `GET /movimientos?hogar_id=1[&desde=YYYY-MM-DD&hasta=YYYY-MM-DD]`
 - ✅ `GET /movimientos?hogar_id=1&incluir_eliminados=true|false`
-- ✅ `POST /movimientos` (`usa_ahorro=true|false` para egresos)
+- ✅ `POST /movimientos` (`usa_ahorro=true|false` para egresos, valida categoría compatible con tipo)
 - ✅ `PATCH /movimientos/:id` (actualiza descripción/categoría/cuenta)
 - ✅ `DELETE /movimientos/:id` (baja lógica)
 

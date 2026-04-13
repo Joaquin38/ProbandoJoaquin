@@ -224,6 +224,21 @@ app.post('/movimientos', async (req, res) => {
   }
 
   try {
+    if (categoria_id) {
+      const { rows: categoriaRows } = await pool.query(
+        `
+        SELECT tipo_movimiento_id
+        FROM categorias
+        WHERE id = $1
+        `,
+        [categoria_id]
+      );
+
+      if (categoriaRows.length > 0 && Number(categoriaRows[0].tipo_movimiento_id) !== Number(tipo_movimiento_id)) {
+        return res.status(400).json({ error: 'La categoría no corresponde al tipo de movimiento seleccionado' });
+      }
+    }
+
     let rows = [];
     try {
       const query = `

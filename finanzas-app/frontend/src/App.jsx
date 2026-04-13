@@ -143,13 +143,24 @@ export default function App() {
   const handleEditarFijoEnGrilla = async (movimiento) => {
     const descripcion = window.prompt('Descripción del valor fijo:', movimiento.descripcion?.replace(' (valor fijo)', '') || '');
     if (!descripcion) return;
-    const montoTexto = window.prompt('Monto base:', String(movimiento.monto_ars || 0));
+    const montoTexto = window.prompt(`Monto para el ciclo ${cicloSeleccionado}:`, String(movimiento.monto_ars || 0));
     if (!montoTexto) return;
+    const nuevoMonto = Number(montoTexto);
+    const montoActual = Number(movimiento.monto_ars || 0);
+    const delta = nuevoMonto - montoActual;
 
     await handleEditarGastoFijo(movimiento.gasto_fijo_id, {
-      descripcion,
-      monto_base: Number(montoTexto)
+      descripcion
     });
+
+    if (delta !== 0) {
+      await handleAjustarGastoFijo(movimiento.gasto_fijo_id, {
+        fecha_aplicacion: `${cicloSeleccionado}-01`,
+        tipo_ajuste: 'monto_fijo',
+        valor: delta,
+        nota: `Ajuste desde grilla para ciclo ${cicloSeleccionado}`
+      });
+    }
   };
 
   const handleEliminarFijoEnGrilla = async (movimiento) => {
