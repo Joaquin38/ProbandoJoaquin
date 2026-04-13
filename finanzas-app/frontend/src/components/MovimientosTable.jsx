@@ -1,9 +1,27 @@
-export default function MovimientosTable({ movimientos, onEditar, onEliminar }) {
+function formatFecha(fecha) {
+  if (!fecha) return '-';
+  const date = new Date(`${fecha}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return fecha;
+  return date.toLocaleDateString('es-AR');
+}
+
+export default function MovimientosTable({ movimientos, onEditar, onEliminar, onNuevo, mostrarEliminados, onToggleEliminados }) {
   return (
     <section className="panel panel-table">
       <div className="panel-header table-header">
-        <h2>Movimientos recientes</h2>
-        <span className="pill muted">{movimientos.length} registros</span>
+        <div>
+          <h2>Movimientos recientes</h2>
+          <span className="pill muted">{movimientos.length} registros</span>
+        </div>
+        <div className="table-actions">
+          <button type="button" onClick={onNuevo}>
+            + Nuevo movimiento
+          </button>
+          <label className="toggle-eliminados">
+            <input type="checkbox" checked={mostrarEliminados} onChange={(e) => onToggleEliminados(e.target.checked)} />
+            Ver eliminados
+          </label>
+        </div>
       </div>
 
       <div className="table-wrapper">
@@ -22,7 +40,7 @@ export default function MovimientosTable({ movimientos, onEditar, onEliminar }) 
           <tbody>
             {movimientos.map((mov) => (
               <tr key={mov.id} className={mov.esProyectado ? 'row-proyectado' : ''}>
-                <td>{mov.fecha}</td>
+                <td>{formatFecha(mov.fecha)}</td>
                 <td>
                   <span className={`badge badge-${mov.tipo_movimiento}`}>{mov.tipo_movimiento}</span>
                   {mov.esProyectado && <span className="badge badge-fijo">fijo</span>}

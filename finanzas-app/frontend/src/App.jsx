@@ -199,23 +199,14 @@ export default function App() {
         <div className="contenido-dashboard">
           {(seccionActiva === 'dashboard' || seccionActiva === 'movimientos') && (
             <>
-              <section className="panel acciones-panel">
-                <h2>Movimientos</h2>
-                <p>Creá o editá movimientos desde un modal para mantener limpio el dashboard.</p>
-                <button type="button" onClick={abrirModalCrear}>
-                  + Nuevo movimiento
-                </button>
-                <label className="toggle-eliminados">
-                  <input
-                    type="checkbox"
-                    checked={mostrarEliminados}
-                    onChange={(e) => setMostrarEliminados(e.target.checked)}
-                  />
-                  Ver eliminados
-                </label>
-              </section>
-
-              <MovimientosTable movimientos={movimientosConValoresFijos} onEditar={handleEditar} onEliminar={handleEliminar} />
+              <MovimientosTable
+                movimientos={movimientosConValoresFijos}
+                onEditar={handleEditar}
+                onEliminar={handleEliminar}
+                onNuevo={abrirModalCrear}
+                mostrarEliminados={mostrarEliminados}
+                onToggleEliminados={setMostrarEliminados}
+              />
             </>
           )}
 

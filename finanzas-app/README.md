@@ -157,7 +157,7 @@ curl -X POST http://localhost:3000/etiquetas \
 Se agregó un frontend base en `frontend/` con:
 
 - resumen de ingresos/egresos/balance,
-- alta de movimientos vía modal popup,
+- alta de movimientos vía botón en la cabecera de la grilla + modal popup,
 - edición y eliminación de movimientos desde la tabla,
 - botones de acción con íconos (✏️ editar / 🗑️ eliminar),
 - tabla de movimientos,
