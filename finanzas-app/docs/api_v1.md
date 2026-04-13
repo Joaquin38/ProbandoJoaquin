@@ -41,12 +41,16 @@
 
 - `GET /gastos-fijos`
 - `POST /gastos-fijos`
+- `PATCH /gastos-fijos/:id`
+- `DELETE /gastos-fijos/:id?ciclo=YYYY-MM`
 - `POST /gastos-fijos/:id/ajustes`
 
 ### Estado actual de implementación
 
 - ✅ `GET /gastos-fijos?hogar_id=1`
 - ✅ `POST /gastos-fijos`
+- ✅ `PATCH /gastos-fijos/:id`
+- ✅ `DELETE /gastos-fijos/:id?ciclo=YYYY-MM`
 - ✅ `POST /gastos-fijos/:id/ajustes`
 
 ## Cotizaciones e IPC

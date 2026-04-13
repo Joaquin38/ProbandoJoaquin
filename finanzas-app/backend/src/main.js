@@ -35,6 +35,26 @@ function resolveCiclo(ciclo, desde) {
   return new Date().toISOString().slice(0, 7);
 }
 
+function cicloEsValido(ciclo) {
+  return /^\d{4}-\d{2}$/.test(ciclo || '');
+}
+
+function finDeCiclo(ciclo) {
+  const [anioTexto, mesTexto] = String(ciclo).split('-');
+  const anio = Number(anioTexto);
+  const mes = Number(mesTexto);
+  return new Date(anio, mes, 0);
+}
+
+function aplicarAjustes(montoBase, ajustes) {
+  return ajustes.reduce((acc, ajuste) => {
+    if (ajuste.tipo_ajuste === 'porcentaje') {
+      return acc * (1 + Number(ajuste.valor) / 100);
+    }
+    return acc + Number(ajuste.valor);
+  }, Number(montoBase));
+}
+
 async function sincronizarCotizacionesDesdeApiPublica() {
   const response = await fetch(COTIZACIONES_API_PUBLICA);
   if (!response.ok) {
@@ -467,13 +487,20 @@ app.post('/cotizaciones', async (req, res) => {
 
 app.get('/gastos-fijos', async (req, res) => {
   const hogarId = Number(req.query.hogar_id);
+  const ciclo = req.query.ciclo;
 
   if (!hogarId) {
     return res.status(400).json({ error: 'hogar_id es obligatorio' });
   }
 
+  if (ciclo && !cicloEsValido(ciclo)) {
+    return res.status(400).json({ error: 'ciclo debe tener formato YYYY-MM' });
+  }
+
+  const cicloConsulta = resolveCiclo(ciclo);
+
   try {
-    const { rows } = await pool.query(
+    const { rows: gastos } = await pool.query(
       `
       SELECT
         gf.id,
@@ -481,25 +508,54 @@ app.get('/gastos-fijos', async (req, res) => {
         gf.moneda,
         gf.monto_base,
         gf.dia_vencimiento,
+        gf.categoria_id,
+        gf.activo_desde_ciclo,
+        gf.activo_hasta_ciclo,
         c.nombre AS categoria,
         tm.codigo AS tipo_movimiento
       FROM gastos_fijos gf
       JOIN categorias c ON c.id = gf.categoria_id
       JOIN tipos_movimiento tm ON tm.id = c.tipo_movimiento_id
-      WHERE gf.hogar_id = $1 AND gf.activo = true
+      WHERE gf.hogar_id = $1
+        AND gf.activo = true
+        AND (gf.activo_desde_ciclo IS NULL OR gf.activo_desde_ciclo <= $2)
+        AND (gf.activo_hasta_ciclo IS NULL OR gf.activo_hasta_ciclo >= $2)
       ORDER BY gf.id DESC
       `,
-      [hogarId]
+      [hogarId, cicloConsulta]
     );
 
-    return res.status(200).json({ total: rows.length, items: rows });
+    const fechaCorte = finDeCiclo(cicloConsulta).toISOString().slice(0, 10);
+    const items = [];
+
+    for (const gasto of gastos) {
+      const { rows: ajustes } = await pool.query(
+        `
+        SELECT tipo_ajuste, valor
+        FROM ajustes_gastos_fijos
+        WHERE gasto_fijo_id = $1
+          AND fecha_aplicacion <= $2
+        ORDER BY fecha_aplicacion ASC, id ASC
+        `,
+        [gasto.id, fechaCorte]
+      );
+
+      const montoVigente = aplicarAjustes(gasto.monto_base, ajustes);
+      items.push({
+        ...gasto,
+        ciclo: cicloConsulta,
+        monto_vigente: Number(montoVigente.toFixed(2))
+      });
+    }
+
+    return res.status(200).json({ total: items.length, items });
   } catch (error) {
     return res.status(500).json({ error: 'Error consultando gastos fijos', detalle: error.message });
   }
 });
 
 app.post('/gastos-fijos', async (req, res) => {
-  const { hogar_id, categoria_id, descripcion, moneda, monto_base, dia_vencimiento } = req.body;
+  const { hogar_id, categoria_id, descripcion, moneda, monto_base, dia_vencimiento, ciclo_desde } = req.body;
 
   if (!hogar_id || !categoria_id || !descripcion || !moneda || !monto_base) {
     return res.status(400).json({ error: 'hogar_id, categoria_id, descripcion, moneda y monto_base son obligatorios' });
@@ -509,19 +565,95 @@ app.post('/gastos-fijos', async (req, res) => {
     return res.status(400).json({ error: 'moneda debe ser ARS o USD' });
   }
 
+  if (ciclo_desde && !cicloEsValido(ciclo_desde)) {
+    return res.status(400).json({ error: 'ciclo_desde debe tener formato YYYY-MM' });
+  }
+
   try {
     const { rows } = await pool.query(
       `
-      INSERT INTO gastos_fijos (hogar_id, categoria_id, descripcion, moneda, monto_base, dia_vencimiento)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id, hogar_id, categoria_id, descripcion, moneda, monto_base, dia_vencimiento
+      INSERT INTO gastos_fijos (hogar_id, categoria_id, descripcion, moneda, monto_base, dia_vencimiento, activo_desde_ciclo)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id, hogar_id, categoria_id, descripcion, moneda, monto_base, dia_vencimiento, activo_desde_ciclo
       `,
-      [hogar_id, categoria_id, descripcion, moneda, monto_base, dia_vencimiento || null]
+      [hogar_id, categoria_id, descripcion, moneda, monto_base, dia_vencimiento || null, ciclo_desde || resolveCiclo()]
     );
 
     return res.status(201).json({ ok: true, gasto_fijo: rows[0] });
   } catch (error) {
     return res.status(500).json({ error: 'Error creando gasto fijo', detalle: error.message });
+  }
+});
+
+app.patch('/gastos-fijos/:id', async (req, res) => {
+  const gastoFijoId = Number(req.params.id);
+  const { descripcion, categoria_id, moneda, monto_base, dia_vencimiento } = req.body;
+
+  if (!gastoFijoId) {
+    return res.status(400).json({ error: 'id inválido' });
+  }
+
+  if (moneda && !['ARS', 'USD'].includes(moneda)) {
+    return res.status(400).json({ error: 'moneda debe ser ARS o USD' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `
+      UPDATE gastos_fijos
+      SET descripcion = COALESCE($1, descripcion),
+          categoria_id = COALESCE($2, categoria_id),
+          moneda = COALESCE($3, moneda),
+          monto_base = COALESCE($4, monto_base),
+          dia_vencimiento = COALESCE($5, dia_vencimiento),
+          actualizado_en = NOW()
+      WHERE id = $6 AND activo = true
+      RETURNING id, descripcion, categoria_id, moneda, monto_base, dia_vencimiento
+      `,
+      [descripcion ?? null, categoria_id ?? null, moneda ?? null, monto_base ?? null, dia_vencimiento ?? null, gastoFijoId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Valor fijo no encontrado' });
+    }
+
+    return res.status(200).json({ ok: true, valor_fijo: rows[0] });
+  } catch (error) {
+    return res.status(500).json({ error: 'Error actualizando valor fijo', detalle: error.message });
+  }
+});
+
+app.delete('/gastos-fijos/:id', async (req, res) => {
+  const gastoFijoId = Number(req.params.id);
+  const ciclo = req.query.ciclo;
+
+  if (!gastoFijoId) {
+    return res.status(400).json({ error: 'id inválido' });
+  }
+
+  if (ciclo && !cicloEsValido(ciclo)) {
+    return res.status(400).json({ error: 'ciclo debe tener formato YYYY-MM' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `
+      UPDATE gastos_fijos
+      SET activo_hasta_ciclo = $1,
+          actualizado_en = NOW()
+      WHERE id = $2 AND activo = true
+      RETURNING id, activo_hasta_ciclo
+      `,
+      [ciclo || resolveCiclo(), gastoFijoId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Valor fijo no encontrado' });
+    }
+
+    return res.status(200).json({ ok: true, valor_fijo: rows[0] });
+  } catch (error) {
+    return res.status(500).json({ error: 'Error eliminando valor fijo por ciclo', detalle: error.message });
   }
 });
 

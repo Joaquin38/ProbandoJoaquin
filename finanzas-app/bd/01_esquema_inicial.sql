@@ -109,6 +109,8 @@ CREATE TABLE IF NOT EXISTS gastos_fijos (
   moneda VARCHAR(3) NOT NULL CHECK (moneda IN ('ARS', 'USD')),
   monto_base NUMERIC(14,2) NOT NULL CHECK (monto_base > 0),
   dia_vencimiento SMALLINT CHECK (dia_vencimiento BETWEEN 1 AND 31),
+  activo_desde_ciclo VARCHAR(7) NOT NULL DEFAULT TO_CHAR(CURRENT_DATE, 'YYYY-MM'),
+  activo_hasta_ciclo VARCHAR(7),
   activo BOOLEAN NOT NULL DEFAULT TRUE,
   creado_en TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   actualizado_en TIMESTAMPTZ NOT NULL DEFAULT NOW()

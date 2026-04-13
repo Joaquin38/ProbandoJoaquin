@@ -167,6 +167,7 @@ Se agregó un frontend base en `frontend/` con:
 - panel de cotización del dólar con actualización desde API pública,
 - sección de valores fijos (alta + listado),
 - valores fijos proyectados (ingresos/egresos) visibles dentro de la grilla principal de movimientos,
+- edición, ajuste por fecha y eliminación de valores fijos a partir de un ciclo específico,
 - confirmación de eliminación en popup propio,
 - filtro para ver/ocultar movimientos eliminados,
 - conexión a API vía `VITE_API_URL`.
@@ -245,16 +246,18 @@ Para cargar un hogar/usuario/categorías demo y probar la API rápido:
 docker compose exec -T postgres psql -U finanzas -d finanzas_db < bd/02_datos_demo.sql
 ```
 
-Si ya tenías una base creada de antes, aplicá también la migración de baja lógica en movimientos:
+Si ya tenías una base creada de antes, aplicá también estas migraciones:
 
 ```bash
 docker compose exec -T postgres psql -U finanzas -d finanzas_db < bd/03_movimientos_soft_delete.sql
+docker compose exec -T postgres psql -U finanzas -d finanzas_db < bd/04_valores_fijos_por_ciclo.sql
 ```
 
 En PowerShell usá este formato (porque `<` da error):
 
 ```powershell
 Get-Content .\bd\03_movimientos_soft_delete.sql | docker compose exec -T postgres psql -U finanzas -d finanzas_db
+Get-Content .\bd\04_valores_fijos_por_ciclo.sql | docker compose exec -T postgres psql -U finanzas -d finanzas_db
 ```
 
 ---

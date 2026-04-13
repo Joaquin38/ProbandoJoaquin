@@ -129,10 +129,65 @@ export async function getCotizaciones(fecha) {
   }
 }
 
-export async function getGastosFijos(hogarId = 1) {
+export async function getGastosFijos(hogarId = 1, ciclo) {
   try {
-    const response = await fetch(`${API_URL}/gastos-fijos?hogar_id=${hogarId}`);
+    const searchParams = new URLSearchParams({ hogar_id: String(hogarId) });
+    if (ciclo) searchParams.set('ciclo', ciclo);
+    const response = await fetch(`${API_URL}/gastos-fijos?${searchParams.toString()}`);
     if (!response.ok) throw new Error('No se pudieron obtener valores fijos');
+    return response.json();
+  } catch (error) {
+    throw new Error(normalizeFetchError(error));
+  }
+}
+
+export async function updateGastoFijo(id, payload) {
+  try {
+    const response = await fetch(`${API_URL}/gastos-fijos/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const detail = await response.json().catch(() => ({}));
+      throw new Error(detail.error || 'No se pudo actualizar el valor fijo');
+    }
+    return response.json();
+  } catch (error) {
+    throw new Error(normalizeFetchError(error));
+  }
+}
+
+export async function createAjusteGastoFijo(id, payload) {
+  try {
+    const response = await fetch(`${API_URL}/gastos-fijos/${id}/ajustes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const detail = await response.json().catch(() => ({}));
+      throw new Error(detail.error || 'No se pudo crear el ajuste');
+    }
+    return response.json();
+  } catch (error) {
+    throw new Error(normalizeFetchError(error));
+  }
+}
+
+export async function deleteGastoFijoEnCiclo(id, ciclo) {
+  try {
+    const query = ciclo ? `?ciclo=${encodeURIComponent(ciclo)}` : '';
+    const response = await fetch(`${API_URL}/gastos-fijos/${id}${query}`, {
+      method: 'DELETE'
+    });
+
+    if (!response.ok) {
+      const detail = await response.json().catch(() => ({}));
+      throw new Error(detail.error || 'No se pudo eliminar el valor fijo para el ciclo');
+    }
     return response.json();
   } catch (error) {
     throw new Error(normalizeFetchError(error));

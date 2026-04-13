@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  createAjusteGastoFijo,
   createGastoFijo,
   createMovimiento,
+  deleteGastoFijoEnCiclo,
   deleteMovimiento,
   getCategorias,
   getCotizaciones,
   getGastosFijos,
   getMovimientos,
   getResumen,
+  updateGastoFijo,
   updateMovimiento
 } from './services/api.js';
 import ResumenCards from './components/ResumenCards.jsx';
@@ -42,7 +45,7 @@ export default function App() {
         getCategorias(1),
         getResumen(1),
         getCotizaciones(),
-        getGastosFijos(1)
+        getGastosFijos(1, cicloSeleccionado)
       ]);
 
       setMovimientos(movData.items || []);
@@ -88,9 +91,39 @@ export default function App() {
   const handleCrearGastoFijo = async (payload) => {
     try {
       setError('');
-      await createGastoFijo(payload);
+      await createGastoFijo({ ...payload, ciclo_desde: cicloSeleccionado });
       await cargarDatos();
       setSeccionActiva('gastos_fijos');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleEditarGastoFijo = async (id, payload) => {
+    try {
+      setError('');
+      await updateGastoFijo(id, payload);
+      await cargarDatos();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleAjustarGastoFijo = async (id, payload) => {
+    try {
+      setError('');
+      await createAjusteGastoFijo(id, payload);
+      await cargarDatos();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleEliminarGastoFijoEnCiclo = async (id) => {
+    try {
+      setError('');
+      await deleteGastoFijoEnCiclo(id, cicloSeleccionado);
+      await cargarDatos();
     } catch (err) {
       setError(err.message);
     }
@@ -215,7 +248,15 @@ export default function App() {
           )}
 
           {seccionActiva === 'gastos_fijos' && (
-            <GastosFijosPanel gastos={gastosFijos} categorias={categorias} onCrear={handleCrearGastoFijo} />
+            <GastosFijosPanel
+              gastos={gastosFijos}
+              categorias={categorias}
+              ciclo={cicloSeleccionado}
+              onCrear={handleCrearGastoFijo}
+              onEditar={handleEditarGastoFijo}
+              onAjustar={handleAjustarGastoFijo}
+              onEliminarEnCiclo={handleEliminarGastoFijoEnCiclo}
+            />
           )}
 
           {seccionActiva === 'ahorros' && (

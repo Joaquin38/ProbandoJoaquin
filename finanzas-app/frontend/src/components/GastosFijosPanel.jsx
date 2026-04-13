@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function GastosFijosPanel({ gastos, categorias, onCrear }) {
+export default function GastosFijosPanel({ gastos, categorias, ciclo, onCrear, onEditar, onAjustar, onEliminarEnCiclo }) {
   const [form, setForm] = useState({
     descripcion: '',
     categoria_id: '',
@@ -23,11 +23,44 @@ export default function GastosFijosPanel({ gastos, categorias, onCrear }) {
     setForm({ descripcion: '', categoria_id: '', moneda: 'ARS', monto_base: '', dia_vencimiento: '' });
   };
 
+  const pedirAjuste = async (gasto) => {
+    const fechaAplicacion = window.prompt('Fecha de aplicación del ajuste (YYYY-MM-DD):', `${ciclo}-01`);
+    if (!fechaAplicacion) return;
+    const tipoAjuste = window.prompt("Tipo de ajuste ('porcentaje' o 'monto_fijo'):", 'porcentaje');
+    if (!tipoAjuste) return;
+    const valorTexto = window.prompt('Valor del ajuste:', '10');
+    if (!valorTexto) return;
+    const nota = window.prompt('Nota (opcional):', '') || null;
+
+    await onAjustar(gasto.id, {
+      fecha_aplicacion: fechaAplicacion,
+      tipo_ajuste: tipoAjuste,
+      valor: Number(valorTexto),
+      nota
+    });
+  };
+
+  const editarValorFijo = async (gasto) => {
+    const descripcion = window.prompt('Descripción:', gasto.descripcion);
+    if (!descripcion) return;
+    const montoBaseTexto = window.prompt('Monto base:', String(gasto.monto_base));
+    if (!montoBaseTexto) return;
+
+    await onEditar(gasto.id, {
+      descripcion,
+      monto_base: Number(montoBaseTexto),
+      categoria_id: gasto.categoria_id || null,
+      moneda: gasto.moneda,
+      dia_vencimiento: gasto.dia_vencimiento
+    });
+  };
+
   return (
     <section className="panel">
       <div className="panel-header">
         <h2>📌 Valores fijos</h2>
         <p>Definí importes recurrentes para contemplar gastos e ingresos fijos (por ejemplo, sueldo).</p>
+        <p>Ciclo seleccionado: {ciclo}</p>
       </div>
 
       <form className="form-grid" onSubmit={handleSubmit}>
@@ -77,7 +110,9 @@ export default function GastosFijosPanel({ gastos, categorias, onCrear }) {
               <th>Categoría</th>
               <th>Moneda</th>
               <th>Monto</th>
+              <th>Monto vigente</th>
               <th>Día</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -87,12 +122,26 @@ export default function GastosFijosPanel({ gastos, categorias, onCrear }) {
                 <td>{gasto.categoria}</td>
                 <td>{gasto.moneda}</td>
                 <td>{Number(gasto.monto_base).toLocaleString('es-AR')}</td>
+                <td>{Number(gasto.monto_vigente ?? gasto.monto_base).toLocaleString('es-AR')}</td>
                 <td>{gasto.dia_vencimiento || '-'}</td>
+                <td>
+                  <div className="acciones-inline">
+                    <button type="button" className="btn-inline" onClick={() => editarValorFijo(gasto)}>
+                      ✏️
+                    </button>
+                    <button type="button" className="btn-inline" onClick={() => pedirAjuste(gasto)}>
+                      📈
+                    </button>
+                    <button type="button" className="btn-inline danger" onClick={() => onEliminarEnCiclo(gasto.id)}>
+                      🗑️ ciclo
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
             {gastos.length === 0 && (
               <tr>
-                <td colSpan={5}>Todavía no hay valores fijos.</td>
+                <td colSpan={7}>Todavía no hay valores fijos.</td>
               </tr>
             )}
           </tbody>
