@@ -74,3 +74,12 @@ Si preferís, podés usar los scripts del repo:
 
 - PowerShell: `.\scripts\destrabar_pull.ps1` o `.\scripts\destrabar_pull.ps1 abort`
 - Bash: `./scripts/destrabar_pull.sh` o `./scripts/destrabar_pull.sh abort`
+
+Si esos scripts todavía no existen en tu copia local, corré directo:
+
+```powershell
+git status
+git diff --name-only --diff-filter=U
+git merge --abort
+git pull --rebase
+```

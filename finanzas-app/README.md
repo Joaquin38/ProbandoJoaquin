@@ -251,6 +251,15 @@ Atajo con scripts:
 - PowerShell: `.\scripts\destrabar_pull.ps1` (diagnóstico) o `.\scripts\destrabar_pull.ps1 abort`
 - Bash: `./scripts/destrabar_pull.sh` (diagnóstico) o `./scripts/destrabar_pull.sh abort`
 
+Si todavía no tenés esos scripts (por ejemplo, porque no pudiste hacer `pull`), usá directamente:
+
+```powershell
+git status
+git diff --name-only --diff-filter=U
+git merge --abort
+git pull --rebase
+```
+
 Crear un movimiento demo:
 
 ```bash
