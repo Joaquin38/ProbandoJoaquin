@@ -69,3 +69,8 @@ git pull
 git merge --abort
 git pull --rebase
 ```
+
+Si preferís, podés usar los scripts del repo:
+
+- PowerShell: `.\scripts\destrabar_pull.ps1` o `.\scripts\destrabar_pull.ps1 abort`
+- Bash: `./scripts/destrabar_pull.sh` o `./scripts/destrabar_pull.sh abort`

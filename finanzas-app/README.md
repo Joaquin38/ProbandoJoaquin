@@ -246,6 +246,11 @@ Tenés un merge anterior sin cerrar. Antes de volver a hacer pull:
 
 Guía completa: `docs/resolver_conflictos_pr.md`.
 
+Atajo con scripts:
+
+- PowerShell: `.\scripts\destrabar_pull.ps1` (diagnóstico) o `.\scripts\destrabar_pull.ps1 abort`
+- Bash: `./scripts/destrabar_pull.sh` (diagnóstico) o `./scripts/destrabar_pull.sh abort`
+
 Crear un movimiento demo:
 
 ```bash
