@@ -296,6 +296,7 @@ Si ya tenías una base creada de antes, aplicá también estas migraciones:
 docker compose exec -T postgres psql -U finanzas -d finanzas_db < bd/03_movimientos_soft_delete.sql
 docker compose exec -T postgres psql -U finanzas -d finanzas_db < bd/04_valores_fijos_por_ciclo.sql
 docker compose exec -T postgres psql -U finanzas -d finanzas_db < bd/05_movimientos_usa_ahorro.sql
+docker compose exec -T postgres psql -U finanzas -d finanzas_db < bd/06_movimientos_estados.sql
 ```
 
 En PowerShell usá este formato (porque `<` da error):
@@ -304,6 +305,7 @@ En PowerShell usá este formato (porque `<` da error):
 Get-Content .\bd\03_movimientos_soft_delete.sql | docker compose exec -T postgres psql -U finanzas -d finanzas_db
 Get-Content .\bd\04_valores_fijos_por_ciclo.sql | docker compose exec -T postgres psql -U finanzas -d finanzas_db
 Get-Content .\bd\05_movimientos_usa_ahorro.sql | docker compose exec -T postgres psql -U finanzas -d finanzas_db
+Get-Content .\bd\06_movimientos_estados.sql | docker compose exec -T postgres psql -U finanzas -d finanzas_db
 ```
 
 ---

@@ -202,6 +202,8 @@ app.post('/movimientos', async (req, res) => {
     cotizacion_aplicada,
     monto_ars,
     usa_ahorro,
+    estado_egreso,
+    estado_ingreso,
     creado_por_usuario_id
   } = req.body;
 
@@ -224,6 +226,11 @@ app.post('/movimientos', async (req, res) => {
   }
 
   try {
+    const estadoEgresoFinal =
+      Number(tipo_movimiento_id) === 2 ? (estado_egreso || 'pendiente') : null;
+    const estadoIngresoFinal =
+      Number(tipo_movimiento_id) === 1 ? (estado_ingreso || 'registrado') : null;
+
     if (categoria_id) {
       const { rows: categoriaRows } = await pool.query(
         `
@@ -254,9 +261,11 @@ app.post('/movimientos', async (req, res) => {
           cotizacion_aplicada,
           monto_ars,
           usa_ahorro,
+          estado_egreso,
+          estado_ingreso,
           creado_por_usuario_id
         ) VALUES (
-          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12
+          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14
         )
         RETURNING id, fecha, moneda_original, monto_original, monto_ars
       `;
@@ -272,6 +281,8 @@ app.post('/movimientos', async (req, res) => {
         cotizacion_aplicada || null,
         monto_ars,
         Boolean(usa_ahorro),
+        estadoEgresoFinal,
+        estadoIngresoFinal,
         creado_por_usuario_id
       ];
       rows = (await pool.query(query, values)).rows;
@@ -318,24 +329,44 @@ app.post('/movimientos', async (req, res) => {
 
 app.patch('/movimientos/:id', async (req, res) => {
   const movimientoId = Number(req.params.id);
-  const { descripcion, categoria_id, cuenta_id } = req.body;
+  const { descripcion, categoria_id, cuenta_id, estado_egreso, estado_ingreso } = req.body;
 
   if (!movimientoId) {
     return res.status(400).json({ error: 'id inválido' });
   }
 
   try {
-    const { rows } = await pool.query(
-      `
-      UPDATE movimientos
-      SET descripcion = COALESCE($1, descripcion),
-          categoria_id = COALESCE($2, categoria_id),
-          cuenta_id = COALESCE($3, cuenta_id)
-      WHERE id = $4 AND activo = true
-      RETURNING id, fecha, descripcion, categoria_id, cuenta_id, activo
-      `,
-      [descripcion ?? null, categoria_id ?? null, cuenta_id ?? null, movimientoId]
-    );
+    let rows = [];
+    try {
+      const result = await pool.query(
+        `
+        UPDATE movimientos
+        SET descripcion = COALESCE($1, descripcion),
+            categoria_id = COALESCE($2, categoria_id),
+            cuenta_id = COALESCE($3, cuenta_id),
+            estado_egreso = COALESCE($4, estado_egreso),
+            estado_ingreso = COALESCE($5, estado_ingreso)
+        WHERE id = $6 AND activo = true
+        RETURNING id, fecha, descripcion, categoria_id, cuenta_id, estado_egreso, estado_ingreso, activo
+        `,
+        [descripcion ?? null, categoria_id ?? null, cuenta_id ?? null, estado_egreso ?? null, estado_ingreso ?? null, movimientoId]
+      );
+      rows = result.rows;
+    } catch (queryError) {
+      if (queryError.code !== '42703') throw queryError;
+      const resultFallback = await pool.query(
+        `
+        UPDATE movimientos
+        SET descripcion = COALESCE($1, descripcion),
+            categoria_id = COALESCE($2, categoria_id),
+            cuenta_id = COALESCE($3, cuenta_id)
+        WHERE id = $4 AND activo = true
+        RETURNING id, fecha, descripcion, categoria_id, cuenta_id, activo
+        `,
+        [descripcion ?? null, categoria_id ?? null, cuenta_id ?? null, movimientoId]
+      );
+      rows = resultFallback.rows;
+    }
 
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Movimiento no encontrado' });

@@ -59,12 +59,12 @@ export default function App() {
   const getEstadoMovimiento = (mov) => {
     const estadoGuardado = estadosMovimientos[mov.id];
     if (estadoGuardado) return estadoGuardado;
-    if (mov.tipo_movimiento === 'egreso') return 'pendiente';
-    if (mov.tipo_movimiento === 'ingreso') return mov.esProyectado ? 'proyectado' : 'registrado';
+    if (mov.tipo_movimiento === 'egreso') return mov.estado_egreso || 'pendiente';
+    if (mov.tipo_movimiento === 'ingreso') return mov.estado_ingreso || (mov.esProyectado ? 'proyectado' : 'registrado');
     return 'registrado';
   };
 
-  const toggleEstadoMovimiento = (mov) => {
+  const toggleEstadoMovimiento = async (mov) => {
     const estadoActual = getEstadoMovimiento(mov);
     let siguiente = estadoActual;
 
@@ -76,7 +76,22 @@ export default function App() {
       return;
     }
 
-    setEstadosMovimientos((prev) => ({ ...prev, [mov.id]: siguiente }));
+    if (mov.esProyectado) {
+      setEstadosMovimientos((prev) => ({ ...prev, [mov.id]: siguiente }));
+      return;
+    }
+
+    try {
+      setError('');
+      if (mov.tipo_movimiento === 'egreso') {
+        await updateMovimiento(mov.id, { estado_egreso: siguiente });
+      } else if (mov.tipo_movimiento === 'ingreso') {
+        await updateMovimiento(mov.id, { estado_ingreso: siguiente });
+      }
+      await cargarDatos();
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   useEffect(() => {
