@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "check:merge-conflicts": "node ./scripts/check-merge-conflicts.mjs",
+    "predev": "npm run check:merge-conflicts",
+    "prebuild": "npm run check:merge-conflicts",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"

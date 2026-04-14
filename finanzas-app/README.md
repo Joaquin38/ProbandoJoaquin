@@ -210,6 +210,19 @@ Checklist:
 3. En `frontend/.env` verificar `VITE_API_URL=http://localhost:3000`.
 4. Reiniciar `npm run dev` de frontend.
 
+### Error de Vite/Babel: `Unexpected token <<<<<<< HEAD`
+
+Ese error indica **conflictos de Git sin resolver** dentro de archivos del frontend.
+
+Checklist rápido:
+
+1. Ver archivos en conflicto: `git status`.
+2. Buscar marcadores: `<<<<<<<`, `=======`, `>>>>>>>`.
+3. Resolver contenido final en cada archivo y eliminar las marcas.
+4. Ejecutar `git add .` y luego `git commit`.
+
+Nota: `npm run dev` y `npm run build` ahora ejecutan un chequeo previo (`check:merge-conflicts`) que falla explícitamente si detecta esos marcadores en `frontend/src`.
+
 ### Flujo para levantar el proyecto cada vez (mientras seguimos metiendo cambios)
 
 1. `git pull` en tu rama local.
