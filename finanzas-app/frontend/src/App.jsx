@@ -260,6 +260,9 @@ export default function App() {
     const { campo, direccion } = ordenGrilla;
     const factor = direccion === 'asc' ? 1 : -1;
     items.sort((a, b) => {
+      if (a.esProyectado && !b.esProyectado) return -1;
+      if (!a.esProyectado && b.esProyectado) return 1;
+
       const normalize = (item) => {
         if (campo === 'estado') return item.esProyectado ? 'proyectado' : item.activo ? 'activo' : 'eliminado';
         return item[campo] ?? '';

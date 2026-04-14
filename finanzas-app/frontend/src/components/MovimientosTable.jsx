@@ -2,7 +2,11 @@ function formatFecha(fecha) {
   if (!fecha) return '-';
   const date = new Date(`${fecha}T00:00:00`);
   if (Number.isNaN(date.getTime())) return fecha;
-  return date.toLocaleDateString('es-AR');
+  return date.toLocaleDateString('es-AR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
 }
 
 export default function MovimientosTable({
