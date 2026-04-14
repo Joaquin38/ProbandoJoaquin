@@ -235,6 +235,17 @@ Nota: `npm run dev` y `npm run build` ahora ejecutan un chequeo previo (`check:m
    - `npm run dev`
 5. Abrir `http://localhost:5173`.
 
+### Si `git pull` dice "Pulling is not possible because you have unmerged files"
+
+Tenés un merge anterior sin cerrar. Antes de volver a hacer pull:
+
+1. Ver conflictos pendientes: `git diff --name-only --diff-filter=U`
+2. Elegir:
+   - Resolver + commit, o
+   - Cancelar merge actual con `git merge --abort`
+
+Guía completa: `docs/resolver_conflictos_pr.md`.
+
 Crear un movimiento demo:
 
 ```bash

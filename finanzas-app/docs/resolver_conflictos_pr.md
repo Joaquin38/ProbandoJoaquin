@@ -47,3 +47,25 @@ git push
 ## Si usás GitHub Web
 
 También podés hacer click en **Resolve conflicts**, editar en web, y confirmar.
+
+## Si `git pull` falla con "you have unmerged files"
+
+Ese mensaje significa que ya hay un merge empezado y sin resolver. Hasta cerrar eso, `git pull` siempre va a fallar.
+
+### Opción A: terminar de resolver el merge actual
+
+```bash
+git status
+git diff --name-only --diff-filter=U
+# resolver archivos
+git add <archivos-resueltos>
+git commit -m "Resuelve conflictos pendientes"
+git pull
+```
+
+### Opción B: cancelar el merge en curso y empezar de nuevo
+
+```bash
+git merge --abort
+git pull --rebase
+```
