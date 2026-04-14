@@ -1,7 +1,9 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = new URL('../src/', import.meta.url);
+const SCRIPT_DIR = resolve(fileURLToPath(new URL('.', import.meta.url)));
+const ROOT = resolve(SCRIPT_DIR, '../src');
 const conflictPattern = /^(<<<<<<<|=======|>>>>>>>)/m;
 const filesWithConflicts = [];
 
@@ -21,7 +23,7 @@ function walk(dirPath) {
   }
 }
 
-walk(ROOT.pathname);
+walk(ROOT);
 
 if (filesWithConflicts.length > 0) {
   console.error('\n❌ Se detectaron marcadores de merge sin resolver:');
