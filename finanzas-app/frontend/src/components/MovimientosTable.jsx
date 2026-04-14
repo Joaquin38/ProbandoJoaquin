@@ -130,14 +130,28 @@ export default function MovimientosTable({
                 </td>
                 <td>
                   <div className="acciones-inline">
-                    {mov.tipo_movimiento === 'egreso' && (
+                    {['egreso', 'ingreso'].includes(mov.tipo_movimiento) && (
                       <button
                         type="button"
-                        className={`btn-inline ${resolverEstado(mov) === 'pagado' ? 'success' : ''}`}
-                        title={resolverEstado(mov) === 'pagado' ? 'Marcar pendiente' : 'Marcar pagado'}
+                        className={`btn-inline ${['pagado', 'registrado'].includes(resolverEstado(mov)) ? 'success' : ''}`}
+                        title={
+                          mov.tipo_movimiento === 'egreso'
+                            ? resolverEstado(mov) === 'pagado'
+                              ? 'Marcar pendiente'
+                              : 'Marcar pagado'
+                            : resolverEstado(mov) === 'registrado'
+                            ? 'Volver a proyectado'
+                            : 'Marcar registrado'
+                        }
                         onClick={() => onToggleEstadoPago?.(mov)}
                       >
-                        {resolverEstado(mov) === 'pagado' ? '↩️' : '✅'}
+                        {mov.tipo_movimiento === 'egreso'
+                          ? resolverEstado(mov) === 'pagado'
+                            ? '↩️'
+                            : '✅'
+                          : resolverEstado(mov) === 'registrado'
+                          ? '↩️'
+                          : '🧾'}
                       </button>
                     )}
                     <button

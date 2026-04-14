@@ -64,10 +64,18 @@ export default function App() {
     return 'registrado';
   };
 
-  const toggleEstadoPago = (mov) => {
-    if (mov.tipo_movimiento !== 'egreso') return;
+  const toggleEstadoMovimiento = (mov) => {
     const estadoActual = getEstadoMovimiento(mov);
-    const siguiente = estadoActual === 'pagado' ? 'pendiente' : 'pagado';
+    let siguiente = estadoActual;
+
+    if (mov.tipo_movimiento === 'egreso') {
+      siguiente = estadoActual === 'pagado' ? 'pendiente' : 'pagado';
+    } else if (mov.tipo_movimiento === 'ingreso') {
+      siguiente = estadoActual === 'registrado' ? 'proyectado' : 'registrado';
+    } else {
+      return;
+    }
+
     setEstadosMovimientos((prev) => ({ ...prev, [mov.id]: siguiente }));
   };
 
@@ -377,7 +385,7 @@ export default function App() {
                 orden={ordenGrilla}
                 onOrdenChange={setOrdenGrilla}
                 getEstadoMovimiento={getEstadoMovimiento}
-                onToggleEstadoPago={toggleEstadoPago}
+                onToggleEstadoPago={toggleEstadoMovimiento}
               />
             </>
           )}
