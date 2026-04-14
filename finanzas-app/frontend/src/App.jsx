@@ -20,6 +20,8 @@ import MenuLateral from './components/MenuLateral.jsx';
 import CotizacionesPanel from './components/CotizacionesPanel.jsx';
 import GastosFijosPanel from './components/GastosFijosPanel.jsx';
 
+const ESTADOS_STORAGE_KEY = 'finanzas_movimientos_estados_v1';
+
 export default function App() {
   const [movimientos, setMovimientos] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -46,6 +48,32 @@ export default function App() {
     campo: 'fecha',
     direccion: 'desc'
   });
+  const [estadosMovimientos, setEstadosMovimientos] = useState(() => {
+    try {
+      return JSON.parse(window.localStorage.getItem(ESTADOS_STORAGE_KEY) || '{}');
+    } catch {
+      return {};
+    }
+  });
+
+  const getEstadoMovimiento = (mov) => {
+    const estadoGuardado = estadosMovimientos[mov.id];
+    if (estadoGuardado) return estadoGuardado;
+    if (mov.tipo_movimiento === 'egreso') return 'pendiente';
+    if (mov.tipo_movimiento === 'ingreso') return mov.esProyectado ? 'proyectado' : 'registrado';
+    return 'registrado';
+  };
+
+  const toggleEstadoPago = (mov) => {
+    if (mov.tipo_movimiento !== 'egreso') return;
+    const estadoActual = getEstadoMovimiento(mov);
+    const siguiente = estadoActual === 'pagado' ? 'pendiente' : 'pagado';
+    setEstadosMovimientos((prev) => ({ ...prev, [mov.id]: siguiente }));
+  };
+
+  useEffect(() => {
+    window.localStorage.setItem(ESTADOS_STORAGE_KEY, JSON.stringify(estadosMovimientos));
+  }, [estadosMovimientos]);
 
   const cargarDatos = async () => {
     try {
@@ -264,7 +292,7 @@ export default function App() {
       if (!a.esProyectado && b.esProyectado) return 1;
 
       const normalize = (item) => {
-        if (campo === 'estado') return item.esProyectado ? 'proyectado' : item.activo ? 'activo' : 'eliminado';
+        if (campo === 'estado') return getEstadoMovimiento(item);
         return item[campo] ?? '';
       };
       const av = normalize(a);
@@ -274,7 +302,29 @@ export default function App() {
     });
 
     return items;
-  }, [movimientosConValoresFijos, filtrosGrilla, ordenGrilla]);
+  }, [movimientosConValoresFijos, filtrosGrilla, ordenGrilla, estadosMovimientos]);
+
+  const resumenCalculado = useMemo(() => {
+    const base = resumen || {};
+    const ingresosRegistrados = movimientosConValoresFijos
+      .filter((mov) => mov.tipo_movimiento === 'ingreso' && getEstadoMovimiento(mov) === 'registrado')
+      .reduce((acc, mov) => acc + Number(mov.monto_ars || 0), 0);
+    const egresosPagados = movimientosConValoresFijos
+      .filter((mov) => mov.tipo_movimiento === 'egreso' && getEstadoMovimiento(mov) === 'pagado')
+      .reduce((acc, mov) => acc + Number(mov.monto_ars || 0), 0);
+    const ingresosTotales = movimientosConValoresFijos
+      .filter((mov) => mov.tipo_movimiento === 'ingreso')
+      .reduce((acc, mov) => acc + Number(mov.monto_ars || 0), 0);
+    const egresosTotales = movimientosConValoresFijos
+      .filter((mov) => mov.tipo_movimiento === 'egreso')
+      .reduce((acc, mov) => acc + Number(mov.monto_ars || 0), 0);
+
+    return {
+      ...base,
+      balance_actual: ingresosRegistrados - egresosPagados,
+      balance_proyectado: ingresosTotales - egresosTotales
+    };
+  }, [movimientosConValoresFijos, resumen, estadosMovimientos]);
 
   return (
     <main className={`container ${menuCollapsed ? 'menu-colapsado' : ''}`}>
@@ -305,7 +355,7 @@ export default function App() {
 
         {error && <p className="error">{error}</p>}
 
-        <ResumenCards resumen={resumen} />
+        <ResumenCards resumen={resumenCalculado} />
 
         <div className="contenido-dashboard">
           {(seccionActiva === 'dashboard' || seccionActiva === 'movimientos') && (
@@ -326,6 +376,8 @@ export default function App() {
                 onFiltrosChange={setFiltrosGrilla}
                 orden={ordenGrilla}
                 onOrdenChange={setOrdenGrilla}
+                getEstadoMovimiento={getEstadoMovimiento}
+                onToggleEstadoPago={toggleEstadoPago}
               />
             </>
           )}

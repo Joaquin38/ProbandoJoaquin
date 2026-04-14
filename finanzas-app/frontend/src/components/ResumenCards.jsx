@@ -3,7 +3,7 @@ function FormattedAmount({ value }) {
 }
 
 export default function ResumenCards({ resumen }) {
-  const { ingresos = 0, egresos = 0, ahorros = 0, balance = 0 } = resumen || {};
+  const { ingresos = 0, egresos = 0, ahorros = 0, balance_actual = 0, balance_proyectado = 0 } = resumen || {};
 
   return (
     <section className="cards-grid">
@@ -29,9 +29,16 @@ export default function ResumenCards({ resumen }) {
       </article>
 
       <article className="card card-balance">
-        <h3>⚖️ Balance</h3>
-        <p className={balance >= 0 ? 'positivo' : 'negativo'}>
-          <FormattedAmount value={balance} />
+        <h3>⚖️ Balance actual</h3>
+        <p className={balance_actual >= 0 ? 'positivo' : 'negativo'}>
+          <FormattedAmount value={balance_actual} />
+        </p>
+      </article>
+
+      <article className="card card-balance">
+        <h3>🧮 Balance proyectado</h3>
+        <p className={balance_proyectado >= 0 ? 'positivo' : 'negativo'}>
+          <FormattedAmount value={balance_proyectado} />
         </p>
       </article>
     </section>

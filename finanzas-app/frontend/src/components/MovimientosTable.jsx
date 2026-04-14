@@ -22,8 +22,11 @@ export default function MovimientosTable({
   filtros,
   onFiltrosChange,
   orden,
-  onOrdenChange
+  onOrdenChange,
+  getEstadoMovimiento,
+  onToggleEstadoPago
 }) {
+  const resolverEstado = getEstadoMovimiento || ((mov) => (mov.esProyectado ? 'proyectado' : mov.activo ? 'pagado' : 'pendiente'));
   const sortIndicator = (campo) => (orden.campo === campo ? (orden.direccion === 'asc' ? ' ▲' : ' ▼') : '');
   const toggleSort = (campo) => {
     onOrdenChange((prev) => {
@@ -121,12 +124,22 @@ export default function MovimientosTable({
                 </td>
                 <td>${Number(mov.monto_ars).toLocaleString('es-AR')}</td>
                 <td>
-                  <span className={`badge ${mov.activo ? 'badge-activo' : 'badge-eliminado'}`}>
-                    {mov.esProyectado ? 'Proyectado' : mov.activo ? 'Activo' : 'Eliminado'}
+                  <span className={`badge badge-estado-${resolverEstado(mov)}`}>
+                    {resolverEstado(mov)}
                   </span>
                 </td>
                 <td>
                   <div className="acciones-inline">
+                    {mov.tipo_movimiento === 'egreso' && (
+                      <button
+                        type="button"
+                        className={`btn-inline ${resolverEstado(mov) === 'pagado' ? 'success' : ''}`}
+                        title={resolverEstado(mov) === 'pagado' ? 'Marcar pendiente' : 'Marcar pagado'}
+                        onClick={() => onToggleEstadoPago?.(mov)}
+                      >
+                        {resolverEstado(mov) === 'pagado' ? '↩️' : '✅'}
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="btn-inline"
