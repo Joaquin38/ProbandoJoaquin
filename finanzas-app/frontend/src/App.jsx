@@ -20,8 +20,6 @@ import MenuLateral from './components/MenuLateral.jsx';
 import CotizacionesPanel from './components/CotizacionesPanel.jsx';
 import GastosFijosPanel from './components/GastosFijosPanel.jsx';
 
-const ESTADOS_STORAGE_KEY = 'finanzas_movimientos_estados_v1';
-
 export default function App() {
   const [movimientos, setMovimientos] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -48,17 +46,8 @@ export default function App() {
     campo: 'fecha',
     direccion: 'desc'
   });
-  const [estadosMovimientos, setEstadosMovimientos] = useState(() => {
-    try {
-      return JSON.parse(window.localStorage.getItem(ESTADOS_STORAGE_KEY) || '{}');
-    } catch {
-      return {};
-    }
-  });
 
   const getEstadoMovimiento = (mov) => {
-    const estadoGuardado = estadosMovimientos[mov.id];
-    if (estadoGuardado) return estadoGuardado;
     if (mov.tipo_movimiento === 'egreso') return mov.estado_egreso || 'pendiente';
     if (mov.tipo_movimiento === 'ingreso') return mov.estado_ingreso || (mov.esProyectado ? 'proyectado' : 'registrado');
     return 'registrado';
@@ -76,10 +65,7 @@ export default function App() {
       return;
     }
 
-    if (mov.esProyectado) {
-      setEstadosMovimientos((prev) => ({ ...prev, [mov.id]: siguiente }));
-      return;
-    }
+    if (mov.esProyectado) return;
 
     try {
       setError('');
@@ -93,10 +79,6 @@ export default function App() {
       setError(err.message);
     }
   };
-
-  useEffect(() => {
-    window.localStorage.setItem(ESTADOS_STORAGE_KEY, JSON.stringify(estadosMovimientos));
-  }, [estadosMovimientos]);
 
   const cargarDatos = async () => {
     try {
@@ -325,7 +307,7 @@ export default function App() {
     });
 
     return items;
-  }, [movimientosConValoresFijos, filtrosGrilla, ordenGrilla, estadosMovimientos]);
+  }, [movimientosConValoresFijos, filtrosGrilla, ordenGrilla]);
 
   const resumenCalculado = useMemo(() => {
     const base = resumen || {};
@@ -347,7 +329,7 @@ export default function App() {
       balance_actual: ingresosRegistrados - egresosPagados,
       balance_proyectado: ingresosTotales - egresosTotales
     };
-  }, [movimientosConValoresFijos, resumen, estadosMovimientos]);
+  }, [movimientosConValoresFijos, resumen]);
 
   return (
     <main className={`container ${menuCollapsed ? 'menu-colapsado' : ''}`}>

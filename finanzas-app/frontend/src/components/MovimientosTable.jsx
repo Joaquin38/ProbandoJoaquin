@@ -1,8 +1,17 @@
 function formatFecha(fecha) {
   if (!fecha) return '-';
-  const date = new Date(`${fecha}T00:00:00`);
+  const raw = String(fecha);
+  const matchIso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (matchIso) {
+    const [, anio, mes, dia] = matchIso;
+    return `${dia}/${mes}/${anio}`;
+  }
+  const date = new Date(raw);
   if (Number.isNaN(date.getTime())) return fecha;
-  return date.toLocaleDateString('es-AR');
+  const dia = String(date.getUTCDate()).padStart(2, '0');
+  const mes = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const anio = date.getUTCFullYear();
+  return `${dia}/${mes}/${anio}`;
 }
 
 export default function MovimientosTable({
@@ -126,7 +135,7 @@ export default function MovimientosTable({
                 </td>
                 <td>
                   <div className="acciones-inline">
-                    {['egreso', 'ingreso'].includes(mov.tipo_movimiento) && (
+                    {['egreso', 'ingreso'].includes(mov.tipo_movimiento) && !mov.esProyectado && (
                       <button
                         type="button"
                         className={`btn-inline ${['pagado', 'registrado'].includes(resolverEstado(mov)) ? 'success' : ''}`}
