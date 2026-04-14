@@ -256,9 +256,12 @@ Si todavía no tenés esos scripts (por ejemplo, porque no pudiste hacer `pull`)
 ```powershell
 git status
 git diff --name-only --diff-filter=U
+git rebase --abort
 git merge --abort
 git pull --rebase
 ```
+
+Tip: si el conflicto ocurrió durante `git pull --rebase`, el comando correcto para salir es `git rebase --abort` (no solo `git merge --abort`).
 
 Crear un movimiento demo:
 

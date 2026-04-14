@@ -80,6 +80,9 @@ Si esos scripts todavía no existen en tu copia local, corré directo:
 ```powershell
 git status
 git diff --name-only --diff-filter=U
+git rebase --abort
 git merge --abort
 git pull --rebase
 ```
+
+> Nota: si el conflicto apareció durante `git pull --rebase`, primero necesitás `git rebase --abort`.
