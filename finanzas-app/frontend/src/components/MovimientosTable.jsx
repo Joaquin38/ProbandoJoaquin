@@ -7,14 +7,29 @@ function formatFecha(fecha) {
 
 export default function MovimientosTable({
   movimientos,
+  categoriasDisponibles = [],
   onEditar,
   onEliminar,
   onNuevo,
   mostrarEliminados,
   onToggleEliminados,
   onEditarFijo,
-  onEliminarFijo
+  onEliminarFijo,
+  filtros,
+  onFiltrosChange,
+  orden,
+  onOrdenChange
 }) {
+  const sortIndicator = (campo) => (orden.campo === campo ? (orden.direccion === 'asc' ? ' ▲' : ' ▼') : '');
+  const toggleSort = (campo) => {
+    onOrdenChange((prev) => {
+      if (prev.campo === campo) {
+        return { campo, direccion: prev.direccion === 'asc' ? 'desc' : 'asc' };
+      }
+      return { campo, direccion: 'asc' };
+    });
+  };
+
   return (
     <section className="panel panel-table">
       <div className="panel-header table-header">
@@ -32,17 +47,58 @@ export default function MovimientosTable({
           </label>
         </div>
       </div>
+      <div className="table-filters">
+        <label>
+          Desde
+          <input
+            type="date"
+            value={filtros.fechaDesde}
+            onChange={(e) => onFiltrosChange((prev) => ({ ...prev, fechaDesde: e.target.value }))}
+          />
+        </label>
+        <label>
+          Hasta
+          <input
+            type="date"
+            value={filtros.fechaHasta}
+            onChange={(e) => onFiltrosChange((prev) => ({ ...prev, fechaHasta: e.target.value }))}
+          />
+        </label>
+        <label>
+          Tipo
+          <select
+            value={filtros.tipoMovimiento}
+            onChange={(e) => onFiltrosChange((prev) => ({ ...prev, tipoMovimiento: e.target.value }))}
+          >
+            <option value="">Todos</option>
+            <option value="ingreso">Ingreso</option>
+            <option value="egreso">Egreso</option>
+            <option value="ahorro">Ahorro</option>
+          </select>
+        </label>
+        <label>
+          Categoría
+          <select value={filtros.categoria} onChange={(e) => onFiltrosChange((prev) => ({ ...prev, categoria: e.target.value }))}>
+            <option value="">Todas</option>
+            {categoriasDisponibles.map((categoria) => (
+              <option key={categoria} value={categoria}>
+                {categoria}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
 
       <div className="table-wrapper">
         <table>
           <thead>
             <tr>
-              <th>Fecha</th>
-              <th>Tipo</th>
-              <th>Categoría</th>
+              <th className="sortable" onClick={() => toggleSort('fecha')}>Fecha{sortIndicator('fecha')}</th>
+              <th className="sortable" onClick={() => toggleSort('tipo_movimiento')}>Tipo{sortIndicator('tipo_movimiento')}</th>
+              <th className="sortable" onClick={() => toggleSort('categoria')}>Categoría{sortIndicator('categoria')}</th>
               <th>Descripción</th>
-              <th>Monto ARS</th>
-              <th>Estado</th>
+              <th className="sortable" onClick={() => toggleSort('monto_ars')}>Monto ARS{sortIndicator('monto_ars')}</th>
+              <th className="sortable" onClick={() => toggleSort('estado')}>Estado{sortIndicator('estado')}</th>
               <th>Acciones</th>
             </tr>
           </thead>

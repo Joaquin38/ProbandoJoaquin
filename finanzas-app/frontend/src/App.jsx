@@ -36,6 +36,16 @@ export default function App() {
   const [seccionActiva, setSeccionActiva] = useState('dashboard');
   const [mostrarEliminados, setMostrarEliminados] = useState(false);
   const [cicloSeleccionado, setCicloSeleccionado] = useState(new Date().toISOString().slice(0, 7));
+  const [filtrosGrilla, setFiltrosGrilla] = useState({
+    fechaDesde: '',
+    fechaHasta: '',
+    tipoMovimiento: '',
+    categoria: ''
+  });
+  const [ordenGrilla, setOrdenGrilla] = useState({
+    campo: 'fecha',
+    direccion: 'desc'
+  });
 
   const cargarDatos = async () => {
     try {
@@ -231,6 +241,38 @@ export default function App() {
     return [...valoresFijosProyectados, ...movimientosOrdenados];
   }, [movimientos, gastosFijos, cotizaciones, cicloSeleccionado]);
 
+  const movimientosFiltradosYOrdenados = useMemo(() => {
+    let items = [...movimientosConValoresFijos];
+
+    if (filtrosGrilla.fechaDesde) {
+      items = items.filter((mov) => String(mov.fecha) >= filtrosGrilla.fechaDesde);
+    }
+    if (filtrosGrilla.fechaHasta) {
+      items = items.filter((mov) => String(mov.fecha) <= filtrosGrilla.fechaHasta);
+    }
+    if (filtrosGrilla.tipoMovimiento) {
+      items = items.filter((mov) => mov.tipo_movimiento === filtrosGrilla.tipoMovimiento);
+    }
+    if (filtrosGrilla.categoria) {
+      items = items.filter((mov) => String(mov.categoria || '') === filtrosGrilla.categoria);
+    }
+
+    const { campo, direccion } = ordenGrilla;
+    const factor = direccion === 'asc' ? 1 : -1;
+    items.sort((a, b) => {
+      const normalize = (item) => {
+        if (campo === 'estado') return item.esProyectado ? 'proyectado' : item.activo ? 'activo' : 'eliminado';
+        return item[campo] ?? '';
+      };
+      const av = normalize(a);
+      const bv = normalize(b);
+      if (campo === 'monto_ars') return (Number(av) - Number(bv)) * factor;
+      return String(av).localeCompare(String(bv)) * factor;
+    });
+
+    return items;
+  }, [movimientosConValoresFijos, filtrosGrilla, ordenGrilla]);
+
   return (
     <main className={`container ${menuCollapsed ? 'menu-colapsado' : ''}`}>
       <MenuLateral
@@ -266,7 +308,10 @@ export default function App() {
           {(seccionActiva === 'dashboard' || seccionActiva === 'movimientos') && (
             <>
               <MovimientosTable
-                movimientos={movimientosConValoresFijos}
+                movimientos={movimientosFiltradosYOrdenados}
+                categoriasDisponibles={Array.from(
+                  new Set(movimientosConValoresFijos.map((mov) => mov.categoria).filter(Boolean))
+                ).sort((a, b) => String(a).localeCompare(String(b)))}
                 onEditar={handleEditar}
                 onEliminar={handleEliminar}
                 onNuevo={abrirModalCrear}
@@ -274,6 +319,10 @@ export default function App() {
                 onToggleEliminados={setMostrarEliminados}
                 onEditarFijo={handleEditarFijoEnGrilla}
                 onEliminarFijo={handleEliminarFijoEnGrilla}
+                filtros={filtrosGrilla}
+                onFiltrosChange={setFiltrosGrilla}
+                orden={ordenGrilla}
+                onOrdenChange={setOrdenGrilla}
               />
             </>
           )}
