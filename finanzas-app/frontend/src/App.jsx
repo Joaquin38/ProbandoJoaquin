@@ -80,10 +80,9 @@ export default function App() {
       return;
     }
 
-    if (mov.esProyectado) {
-      setEstadoOverrides((prev) => ({ ...prev, [mov.id]: siguiente }));
-      return;
-    }
+    setEstadoOverrides((prev) => ({ ...prev, [mov.id]: siguiente }));
+
+    if (mov.esProyectado) return;
 
     try {
       setError('');
@@ -94,6 +93,7 @@ export default function App() {
       }
       await cargarDatos();
     } catch (err) {
+      setEstadoOverrides((prev) => ({ ...prev, [mov.id]: estadoActual }));
       setError(err.message);
     }
   };
