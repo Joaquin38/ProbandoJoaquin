@@ -32,6 +32,11 @@ export default function MovimientosTable({
   onToggleEstadoPago
 }) {
   const resolverEstado = getEstadoMovimiento || ((mov) => (mov.esProyectado ? 'proyectado' : mov.activo ? 'pagado' : 'pendiente'));
+  const etiquetaEstado = (mov) => {
+    const estado = resolverEstado(mov);
+    if (mov.tipo_movimiento === 'ingreso' && estado === 'registrado') return 'cobrado';
+    return estado;
+  };
   const sortIndicator = (campo) => (orden.campo === campo ? (orden.direccion === 'asc' ? ' ▲' : ' ▼') : '');
   const toggleSort = (campo) => {
     onOrdenChange((prev) => {
@@ -101,7 +106,7 @@ export default function MovimientosTable({
         </label>
       </div>
       <p className="table-legend">
-        <strong>Estados:</strong> egreso → pendiente/pagado · ingreso → proyectado/registrado · ahorro → registrado.
+        <strong>Estados:</strong> egreso → pendiente/pagado · ingreso → proyectado/cobrado · ahorro → registrado.
       </p>
 
       <div className="table-wrapper">
@@ -134,7 +139,7 @@ export default function MovimientosTable({
                 <td>${Number(mov.monto_ars).toLocaleString('es-AR')}</td>
                 <td>
                   <span className={`badge badge-estado-${resolverEstado(mov)}`}>
-                    {resolverEstado(mov)}
+                    {etiquetaEstado(mov)}
                   </span>
                 </td>
                 <td>
@@ -150,7 +155,7 @@ export default function MovimientosTable({
                               : 'Marcar pagado'
                             : resolverEstado(mov) === 'registrado'
                             ? 'Volver a proyectado'
-                            : 'Marcar registrado'
+                            : 'Marcar cobrado'
                         }
                         onClick={() => onToggleEstadoPago?.(mov)}
                       >
@@ -165,7 +170,7 @@ export default function MovimientosTable({
                     )}
                     <button
                       type="button"
-                      className="btn-inline"
+                      className="btn-inline secondary"
                       title="Editar"
                       disabled={!mov.activo}
                       onClick={() => (mov.esProyectado ? onEditarFijo?.(mov) : onEditar(mov))}
