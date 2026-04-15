@@ -56,10 +56,15 @@ export default function App() {
     campo: 'fecha',
     direccion: 'desc'
   });
+  const [estadoOverrides, setEstadoOverrides] = useState({});
 
   const getEstadoMovimiento = (mov) => {
+    const override = estadoOverrides[mov.id];
+    if (override) return override;
     if (mov.tipo_movimiento === 'egreso') return mov.estado_egreso || 'pendiente';
-    if (mov.tipo_movimiento === 'ingreso') return mov.estado_ingreso || (mov.esProyectado ? 'proyectado' : 'registrado');
+    if (['ingreso', 'ahorro'].includes(mov.tipo_movimiento)) {
+      return mov.estado_ingreso || (mov.esProyectado ? 'proyectado' : 'registrado');
+    }
     return 'registrado';
   };
 
@@ -69,19 +74,22 @@ export default function App() {
 
     if (mov.tipo_movimiento === 'egreso') {
       siguiente = estadoActual === 'pagado' ? 'pendiente' : 'pagado';
-    } else if (mov.tipo_movimiento === 'ingreso') {
+    } else if (['ingreso', 'ahorro'].includes(mov.tipo_movimiento)) {
       siguiente = estadoActual === 'registrado' ? 'proyectado' : 'registrado';
     } else {
       return;
     }
 
-    if (mov.esProyectado) return;
+    if (mov.esProyectado) {
+      setEstadoOverrides((prev) => ({ ...prev, [mov.id]: siguiente }));
+      return;
+    }
 
     try {
       setError('');
       if (mov.tipo_movimiento === 'egreso') {
         await updateMovimiento(mov.id, { estado_egreso: siguiente });
-      } else if (mov.tipo_movimiento === 'ingreso') {
+      } else if (['ingreso', 'ahorro'].includes(mov.tipo_movimiento)) {
         await updateMovimiento(mov.id, { estado_ingreso: siguiente });
       }
       await cargarDatos();
@@ -335,7 +343,7 @@ export default function App() {
     });
 
     return items;
-  }, [movimientosConValoresFijos, filtrosGrilla, ordenGrilla]);
+  }, [movimientosConValoresFijos, filtrosGrilla, ordenGrilla, estadoOverrides]);
 
   const resumenCalculado = useMemo(() => {
     const base = resumen || {};

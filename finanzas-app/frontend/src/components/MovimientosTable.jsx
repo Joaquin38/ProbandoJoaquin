@@ -106,7 +106,7 @@ export default function MovimientosTable({
         </label>
       </div>
       <p className="table-legend">
-        <strong>Estados:</strong> egreso → pendiente/pagado · ingreso → proyectado/cobrado · ahorro → registrado.
+        <strong>Estados:</strong> egreso → pendiente/pagado · ingreso → proyectado/cobrado · ahorro → proyectado/registrado.
       </p>
 
       <div className="table-wrapper">
@@ -144,7 +144,7 @@ export default function MovimientosTable({
                 </td>
                 <td>
                   <div className="acciones-inline">
-                    {['egreso', 'ingreso'].includes(mov.tipo_movimiento) && !mov.esProyectado && (
+                    {['egreso', 'ingreso', 'ahorro'].includes(mov.tipo_movimiento) && (
                       <button
                         type="button"
                         className={`btn-inline ${['pagado', 'registrado'].includes(resolverEstado(mov)) ? 'success' : ''}`}
@@ -155,7 +155,9 @@ export default function MovimientosTable({
                               : 'Marcar pagado'
                             : resolverEstado(mov) === 'registrado'
                             ? 'Volver a proyectado'
-                            : 'Marcar cobrado'
+                            : mov.tipo_movimiento === 'ingreso'
+                            ? 'Marcar cobrado'
+                            : 'Marcar registrado'
                         }
                         onClick={() => onToggleEstadoPago?.(mov)}
                       >
@@ -165,7 +167,9 @@ export default function MovimientosTable({
                             : '✅'
                           : resolverEstado(mov) === 'registrado'
                           ? '↩️'
-                          : '🧾'}
+                          : mov.tipo_movimiento === 'ingreso'
+                          ? '🧾'
+                          : '🏦'}
                       </button>
                     )}
                     <button
