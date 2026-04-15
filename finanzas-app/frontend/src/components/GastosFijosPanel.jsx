@@ -8,6 +8,21 @@ export default function GastosFijosPanel({ gastos, categorias, ciclo, onCrear, o
     monto_base: '',
     dia_vencimiento: ''
   });
+  const [gastoEditando, setGastoEditando] = useState(null);
+  const [formEditar, setFormEditar] = useState({
+    descripcion: '',
+    categoria_id: '',
+    moneda: 'ARS',
+    monto_base: '',
+    dia_vencimiento: ''
+  });
+  const [gastoAjustando, setGastoAjustando] = useState(null);
+  const [formAjuste, setFormAjuste] = useState({
+    fecha_aplicacion: `${ciclo}-01`,
+    tipo_ajuste: 'porcentaje',
+    valor: '',
+    nota: ''
+  });
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -23,36 +38,48 @@ export default function GastosFijosPanel({ gastos, categorias, ciclo, onCrear, o
     setForm({ descripcion: '', categoria_id: '', moneda: 'ARS', monto_base: '', dia_vencimiento: '' });
   };
 
-  const pedirAjuste = async (gasto) => {
-    const fechaAplicacion = window.prompt('Fecha de aplicación del ajuste (YYYY-MM-DD):', `${ciclo}-01`);
-    if (!fechaAplicacion) return;
-    const tipoAjuste = window.prompt("Tipo de ajuste ('porcentaje' o 'monto_fijo'):", 'porcentaje');
-    if (!tipoAjuste) return;
-    const valorTexto = window.prompt('Valor del ajuste:', '10');
-    if (!valorTexto) return;
-    const nota = window.prompt('Nota (opcional):', '') || null;
-
-    await onAjustar(gasto.id, {
-      fecha_aplicacion: fechaAplicacion,
-      tipo_ajuste: tipoAjuste,
-      valor: Number(valorTexto),
-      nota
+  const abrirAjuste = (gasto) => {
+    setGastoAjustando(gasto);
+    setFormAjuste({
+      fecha_aplicacion: `${ciclo}-01`,
+      tipo_ajuste: 'porcentaje',
+      valor: '',
+      nota: ''
     });
   };
 
-  const editarValorFijo = async (gasto) => {
-    const descripcion = window.prompt('Descripción:', gasto.descripcion);
-    if (!descripcion) return;
-    const montoBaseTexto = window.prompt('Monto base:', String(gasto.monto_base));
-    if (!montoBaseTexto) return;
-
-    await onEditar(gasto.id, {
-      descripcion,
-      monto_base: Number(montoBaseTexto),
-      categoria_id: gasto.categoria_id || null,
-      moneda: gasto.moneda,
-      dia_vencimiento: gasto.dia_vencimiento
+  const confirmarAjuste = async () => {
+    if (!gastoAjustando) return;
+    await onAjustar(gastoAjustando.id, {
+      fecha_aplicacion: formAjuste.fecha_aplicacion,
+      tipo_ajuste: formAjuste.tipo_ajuste,
+      valor: Number(formAjuste.valor || 0),
+      nota: formAjuste.nota || null
     });
+    setGastoAjustando(null);
+  };
+
+  const abrirEdicion = (gasto) => {
+    setGastoEditando(gasto);
+    setFormEditar({
+      descripcion: gasto.descripcion || '',
+      categoria_id: gasto.categoria_id || '',
+      moneda: gasto.moneda || 'ARS',
+      monto_base: Number(gasto.monto_base || 0),
+      dia_vencimiento: gasto.dia_vencimiento || ''
+    });
+  };
+
+  const confirmarEdicion = async () => {
+    if (!gastoEditando) return;
+    await onEditar(gastoEditando.id, {
+      descripcion: formEditar.descripcion,
+      monto_base: Number(formEditar.monto_base || 0),
+      categoria_id: formEditar.categoria_id ? Number(formEditar.categoria_id) : null,
+      moneda: formEditar.moneda,
+      dia_vencimiento: formEditar.dia_vencimiento ? Number(formEditar.dia_vencimiento) : null
+    });
+    setGastoEditando(null);
   };
 
   return (
@@ -126,14 +153,14 @@ export default function GastosFijosPanel({ gastos, categorias, ciclo, onCrear, o
                 <td>{gasto.dia_vencimiento || '-'}</td>
                 <td>
                   <div className="acciones-inline">
-                    <button type="button" className="btn-inline" onClick={() => editarValorFijo(gasto)}>
+                    <button type="button" className="btn-inline" onClick={() => abrirEdicion(gasto)}>
                       ✏️
                     </button>
-                    <button type="button" className="btn-inline" onClick={() => pedirAjuste(gasto)}>
+                    <button type="button" className="btn-inline" onClick={() => abrirAjuste(gasto)}>
                       📈
                     </button>
-                    <button type="button" className="btn-inline danger" onClick={() => onEliminarEnCiclo(gasto.id)}>
-                      🗑️ ciclo
+                    <button type="button" className="btn-inline danger" onClick={() => onEliminarEnCiclo(gasto.id)} title={`Desactivar desde ciclo ${ciclo}`}>
+                      🗑️ desde ciclo
                     </button>
                   </div>
                 </td>
@@ -147,6 +174,101 @@ export default function GastosFijosPanel({ gastos, categorias, ciclo, onCrear, o
           </tbody>
         </table>
       </div>
+
+      {gastoEditando && (
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>✏️ Editar valor fijo</h3>
+              <button type="button" className="close-btn" onClick={() => setGastoEditando(null)}>
+                ✕
+              </button>
+            </div>
+            <form className="form-grid" onSubmit={(e) => { e.preventDefault(); confirmarEdicion(); }}>
+              <label>
+                Descripción
+                <input value={formEditar.descripcion} onChange={(e) => setFormEditar((p) => ({ ...p, descripcion: e.target.value }))} required />
+              </label>
+              <label>
+                Categoría
+                <select value={formEditar.categoria_id} onChange={(e) => setFormEditar((p) => ({ ...p, categoria_id: e.target.value }))} required>
+                  <option value="">Seleccionar</option>
+                  {categorias.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nombre}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Moneda
+                <select value={formEditar.moneda} onChange={(e) => setFormEditar((p) => ({ ...p, moneda: e.target.value }))}>
+                  <option value="ARS">ARS</option>
+                  <option value="USD">USD</option>
+                </select>
+              </label>
+              <label>
+                Monto base
+                <input type="number" min="1" value={formEditar.monto_base} onChange={(e) => setFormEditar((p) => ({ ...p, monto_base: e.target.value }))} required />
+              </label>
+              <label>
+                Día vencimiento
+                <input type="number" min="1" max="31" value={formEditar.dia_vencimiento} onChange={(e) => setFormEditar((p) => ({ ...p, dia_vencimiento: e.target.value }))} />
+              </label>
+              <div className="confirm-actions full-width">
+                <button type="button" className="btn-inline" onClick={() => setGastoEditando(null)}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn-inline success">
+                  Guardar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {gastoAjustando && (
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>📈 Ajuste de valor fijo</h3>
+              <button type="button" className="close-btn" onClick={() => setGastoAjustando(null)}>
+                ✕
+              </button>
+            </div>
+            <form className="form-grid" onSubmit={(e) => { e.preventDefault(); confirmarAjuste(); }}>
+              <label>
+                Fecha aplicación
+                <input type="date" value={formAjuste.fecha_aplicacion} onChange={(e) => setFormAjuste((p) => ({ ...p, fecha_aplicacion: e.target.value }))} required />
+              </label>
+              <label>
+                Tipo ajuste
+                <select value={formAjuste.tipo_ajuste} onChange={(e) => setFormAjuste((p) => ({ ...p, tipo_ajuste: e.target.value }))}>
+                  <option value="porcentaje">Porcentaje</option>
+                  <option value="monto_fijo">Monto fijo</option>
+                </select>
+              </label>
+              <label>
+                Valor
+                <input type="number" value={formAjuste.valor} onChange={(e) => setFormAjuste((p) => ({ ...p, valor: e.target.value }))} required />
+              </label>
+              <label className="full-width">
+                Nota
+                <input value={formAjuste.nota} onChange={(e) => setFormAjuste((p) => ({ ...p, nota: e.target.value }))} />
+              </label>
+              <div className="confirm-actions full-width">
+                <button type="button" className="btn-inline" onClick={() => setGastoAjustando(null)}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn-inline success">
+                  Aplicar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

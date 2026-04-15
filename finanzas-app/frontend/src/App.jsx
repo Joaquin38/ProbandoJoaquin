@@ -36,6 +36,16 @@ export default function App() {
   const [seccionActiva, setSeccionActiva] = useState('dashboard');
   const [mostrarEliminados, setMostrarEliminados] = useState(false);
   const [cicloSeleccionado, setCicloSeleccionado] = useState(new Date().toISOString().slice(0, 7));
+  const [fijoEditModal, setFijoEditModal] = useState(null);
+  const [fijoEditForm, setFijoEditForm] = useState({
+    gasto_fijo_id: null,
+    descripcion: '',
+    categoria_id: '',
+    moneda: 'ARS',
+    monto_base: '',
+    dia_vencimiento: '',
+    monto_ciclo: ''
+  });
   const [filtrosGrilla, setFiltrosGrilla] = useState({
     fechaDesde: '',
     fechaHasta: '',
@@ -184,26 +194,44 @@ export default function App() {
   };
 
   const handleEditarFijoEnGrilla = async (movimiento) => {
-    const descripcion = window.prompt('Descripción del valor fijo:', movimiento.descripcion?.replace(' (valor fijo)', '') || '');
-    if (!descripcion) return;
-    const montoTexto = window.prompt(`Monto para el ciclo ${cicloSeleccionado}:`, String(movimiento.monto_ars || 0));
-    if (!montoTexto) return;
-    const nuevoMonto = Number(montoTexto);
-    const montoActual = Number(movimiento.monto_ars || 0);
-    const delta = nuevoMonto - montoActual;
+    const gasto = gastosFijos.find((item) => Number(item.id) === Number(movimiento.gasto_fijo_id));
+    if (!gasto) return;
+    setFijoEditModal(movimiento);
+    setFijoEditForm({
+      gasto_fijo_id: gasto.id,
+      descripcion: gasto.descripcion || '',
+      categoria_id: gasto.categoria_id || '',
+      moneda: gasto.moneda || 'ARS',
+      monto_base: Number(gasto.monto_base || 0),
+      dia_vencimiento: gasto.dia_vencimiento || '',
+      monto_ciclo: Number(movimiento.monto_ars || 0)
+    });
+  };
 
-    await handleEditarGastoFijo(movimiento.gasto_fijo_id, {
-      descripcion
+  const confirmarEditarFijoEnGrilla = async () => {
+    if (!fijoEditModal || !fijoEditForm.gasto_fijo_id) return;
+    const montoActual = Number(fijoEditModal.monto_ars || 0);
+    const nuevoMontoCiclo = Number(fijoEditForm.monto_ciclo || 0);
+    const delta = nuevoMontoCiclo - montoActual;
+
+    await handleEditarGastoFijo(fijoEditForm.gasto_fijo_id, {
+      descripcion: fijoEditForm.descripcion,
+      categoria_id: fijoEditForm.categoria_id ? Number(fijoEditForm.categoria_id) : null,
+      moneda: fijoEditForm.moneda,
+      monto_base: Number(fijoEditForm.monto_base || 0),
+      dia_vencimiento: fijoEditForm.dia_vencimiento ? Number(fijoEditForm.dia_vencimiento) : null
     });
 
     if (delta !== 0) {
-      await handleAjustarGastoFijo(movimiento.gasto_fijo_id, {
+      await handleAjustarGastoFijo(fijoEditForm.gasto_fijo_id, {
         fecha_aplicacion: `${cicloSeleccionado}-01`,
         tipo_ajuste: 'monto_fijo',
         valor: delta,
         nota: `Ajuste desde grilla para ciclo ${cicloSeleccionado}`
       });
     }
+
+    setFijoEditModal(null);
   };
 
   const handleEliminarFijoEnGrilla = async (movimiento) => {
@@ -460,6 +488,89 @@ export default function App() {
                 Eliminar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {fijoEditModal && (
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>✏️ Editar valor fijo</h3>
+              <button type="button" className="close-btn" onClick={() => setFijoEditModal(null)}>
+                ✕
+              </button>
+            </div>
+
+            <form className="form-grid" onSubmit={(e) => { e.preventDefault(); confirmarEditarFijoEnGrilla(); }}>
+              <label>
+                Descripción
+                <input
+                  value={fijoEditForm.descripcion}
+                  onChange={(e) => setFijoEditForm((prev) => ({ ...prev, descripcion: e.target.value }))}
+                  required
+                />
+              </label>
+              <label>
+                Categoría
+                <select
+                  value={fijoEditForm.categoria_id}
+                  onChange={(e) => setFijoEditForm((prev) => ({ ...prev, categoria_id: e.target.value }))}
+                  required
+                >
+                  <option value="">Seleccionar</option>
+                  {categorias.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.nombre}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Moneda
+                <select value={fijoEditForm.moneda} onChange={(e) => setFijoEditForm((prev) => ({ ...prev, moneda: e.target.value }))}>
+                  <option value="ARS">ARS</option>
+                  <option value="USD">USD</option>
+                </select>
+              </label>
+              <label>
+                Monto base
+                <input
+                  type="number"
+                  min="1"
+                  value={fijoEditForm.monto_base}
+                  onChange={(e) => setFijoEditForm((prev) => ({ ...prev, monto_base: e.target.value }))}
+                  required
+                />
+              </label>
+              <label>
+                Día vencimiento
+                <input
+                  type="number"
+                  min="1"
+                  max="31"
+                  value={fijoEditForm.dia_vencimiento}
+                  onChange={(e) => setFijoEditForm((prev) => ({ ...prev, dia_vencimiento: e.target.value }))}
+                />
+              </label>
+              <label>
+                Monto en ciclo {cicloSeleccionado}
+                <input
+                  type="number"
+                  min="0"
+                  value={fijoEditForm.monto_ciclo}
+                  onChange={(e) => setFijoEditForm((prev) => ({ ...prev, monto_ciclo: e.target.value }))}
+                />
+              </label>
+              <div className="confirm-actions full-width">
+                <button type="button" className="btn-inline" onClick={() => setFijoEditModal(null)}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn-inline success">
+                  Guardar
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
