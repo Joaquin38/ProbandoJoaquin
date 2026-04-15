@@ -30,6 +30,7 @@ export default function ResumenCards({ resumen }) {
 
       <article className="card card-balance">
         <h3>⚖️ Balance actual</h3>
+        <small>Ingresos registrados − egresos pagados</small>
         <p className={balance_actual >= 0 ? 'positivo' : 'negativo'}>
           <FormattedAmount value={balance_actual} />
         </p>
@@ -37,6 +38,7 @@ export default function ResumenCards({ resumen }) {
 
       <article className="card card-balance">
         <h3>🧮 Balance proyectado</h3>
+        <small>Todos los ingresos − todos los egresos</small>
         <p className={balance_proyectado >= 0 ? 'positivo' : 'negativo'}>
           <FormattedAmount value={balance_proyectado} />
         </p>

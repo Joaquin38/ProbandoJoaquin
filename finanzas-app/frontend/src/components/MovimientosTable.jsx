@@ -100,6 +100,9 @@ export default function MovimientosTable({
           </select>
         </label>
       </div>
+      <p className="table-legend">
+        <strong>Estados:</strong> egreso → pendiente/pagado · ingreso → proyectado/registrado · ahorro → registrado.
+      </p>
 
       <div className="table-wrapper">
         <table>
@@ -121,6 +124,7 @@ export default function MovimientosTable({
                 <td>
                   <span className={`badge badge-${mov.tipo_movimiento}`}>{mov.tipo_movimiento}</span>
                   {mov.esProyectado && <span className="badge badge-fijo">fijo</span>}
+                  <span className="badge badge-origen">{mov.esProyectado ? 'proyección' : 'manual'}</span>
                 </td>
                 <td>{mov.categoria || '-'}</td>
                 <td>
